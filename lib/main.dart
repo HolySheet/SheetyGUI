@@ -16,10 +16,13 @@ import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sheety_gui/service_locator.dart';
+import 'package:sheety_gui/ui/views/list_view.dart';
 
 void main() {
-  // See https://github.com/flutter/flutter/wiki/Desktop-shells#target-platform-override
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+
+  setupLocator();
 
   runApp(new MyApp());
 }
@@ -28,12 +31,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        fontFamily: 'Roboto'
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
+      title: 'HolySheet',
+//      theme: ThemeData(
+//        brightness: Brightness.dark,
+//        fontFamily: 'Roboto'
+//      ),
+//      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: FileListView(),
     );
   }
 }
