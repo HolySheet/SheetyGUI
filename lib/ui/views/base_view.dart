@@ -52,12 +52,28 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
             body: Row(
               children: [
                 Container(
-//                  margin: const EdgeInsets.all(4.0),
                   child: Card(
                     elevation: 5,
                     margin: EdgeInsets.all(0),
                     child: Column(
                       children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: NetworkImage(
+                                      'https://lh3.googleusercontent.com/-3hnUnOvs4Pg/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rc4nDtmlwLdIFlLDoVo1oiZGWyhnQ.CMID/photo.jpg'),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                         getLeftButton(
                             icon: Icons.view_module,
                             label: 'File list',
@@ -93,38 +109,6 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
                     ),
                   ),
                 ),
-
-//            Card(
-//              elevation: 5,
-//              decoration: BoxDecoration(
-//                color: Theme.of(context).cardColor,
-//                boxShadow: [
-//                  BoxShadow(
-//                    color: Colors.red,
-//                    blurRadius: 15,
-//                    spreadRadius: 3,
-//                    offset: Offset(10, 0),
-//                  )
-//                ],
-//              ),
-
-//              child: Column(
-//                children: [
-//                  getLeftButton(icon: Icons.view_module, label: 'File list', onPressed: () {
-//                    print('Pressed list');
-//                  }),
-//                  getLeftButton(icon: Icons.developer_board, label: 'Console', onPressed: () {
-//                    print('Pressed console');
-//                  }),
-//                  getLeftButton(icon: Icons.schedule, label: 'Schedule', onPressed: () {
-//                    print('Pressed schedule');
-//                  }),
-//                  getLeftButton(icon: Icons.insert_drive_file, label: 'Logs', onPressed: () {
-//                    print('Pressed logs');
-//                  }),
-//                ],
-//              ),
-//            ),
                 Builder(
                     builder: (context) => SafeArea(
                           child: widget._builder(context, child, model),
