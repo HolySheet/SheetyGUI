@@ -16,6 +16,8 @@ class FileListViewState extends State<FileListView> {
   Widget build(BuildContext context) {
     return BaseView<ListModel>(
       showFab: true,
+      fabAdd: (model) => model.sssss(),
+      onModelReady: (model) => model.click(),
       builder: (context, child, model) => Container(
           color: Colors.red,
       ),

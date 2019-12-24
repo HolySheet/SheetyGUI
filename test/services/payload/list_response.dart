@@ -4,7 +4,7 @@ import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 import 'package:test/test.dart';
 
-final expected = json.decode('''
+final expected = jsonDecode('''
 {
   "code": 1,
   "type": 1,
@@ -35,7 +35,7 @@ void main() {
   });
 
   test('JSON should be deserialized to an expected value', () {
-    var payload = ListResponse([ListItem('test.txt', 54321, 6, 123456789, 'abcdefghijklmnopqrstuvwxyz')], 1, PayloadType.LIST, 'Success');
+    var payload = ListResponse([ListItem('test.txt', 54321, 6, 123456789, 'abcdefghijklmnopqrstuvwxyz')]);
 
     expect(expected, payload.toJson());
   });

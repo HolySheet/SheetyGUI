@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
-/// Json sent to a client in response to a request the listing of files. Example json (Excluding [BasicPayload]) is:
+/// Json sent to a client in response to a request the listing of files.
+/// Example json (Excluding [BasicPayload]) is:
 /// <pre>
 ///     {
 ///         "items": [
@@ -27,16 +28,21 @@ import 'package:sheety_gui/services/payload_type.dart';
 class ListResponse extends BasicPayload {
   final List<ListItem> items;
 
-  ListResponse(this.items, int code, PayloadType type, String message)
-      : super(code, type, message);
+  ListResponse(this.items, [String message = 'Success'])
+      : super(1, PayloadType.LIST_RESPONSE, message);
 
   ListResponse.fromJson(Map<String, dynamic> json)
       : items =
             [...json['items']].map((inj) => ListItem.fromJson(inj)).toList(),
-        super.fromJson(json, type: PayloadType.LIST);
+        super.fromJson(json, type: PayloadType.LIST_RESPONSE);
 
   Map<String, dynamic> toJson() => super.toJson()
     ..addAll({'items': items.map((item) => item.toJson()).toList()});
+
+  @override
+  String toString() {
+    return 'ListResponse{code: $code, type: $type, message: $message, state: $state, items: $items}';
+  }
 }
 
 class ListItem {
@@ -59,4 +65,9 @@ class ListItem {
 
   Map<String, dynamic> toJson() =>
       {'name': name, 'size': size, 'sheets': sheets, 'date': date, 'id': id};
+
+  @override
+  String toString() {
+    return 'ListItem{name: $name, size: $size, sheets: $sheets, date: $date, id: $id}';
+  }
 }
