@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:sheety_gui/services/payload/error.dart';
+import 'package:sheety_gui/services/payload/error_payload.dart';
 import 'package:sheety_gui/services/payload/list_request.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';

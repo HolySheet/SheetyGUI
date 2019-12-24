@@ -1,22 +1,9 @@
-// Copyright 2018 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
+import 'package:async/async.dart';
 import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:sheety_gui/service_locator.dart';
+import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/ui/views/list_view.dart';
 
 void main() {
@@ -28,63 +15,36 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  final connectorService = locator<JavaConnectorService>();
+
+  final _memoizer = AsyncMemoizer<dynamic>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'HolySheet',
-//      theme: ThemeData(
+      theme: ThemeData(
 //        brightness: Brightness.dark,
-//        fontFamily: 'Roboto'
-//      ),
-//      home: MyHomePage(title: 'Flutter Demo Home Page'),
-      home: FileListView(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+          fontFamily: 'Roboto',
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+      home: FutureBuilder(
+        future: _memoizer.runOnce(() async => connectorService.connect()),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+            case ConnectionState.waiting:
+              return Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  child: Center(child: CircularProgressIndicator()));
+            default:
+              if (snapshot.data == null) {
+                return FileListView(); // Usually show login
+              } else {
+                return FileListView();
+              }
+          }
+        },
       ),
     );
   }

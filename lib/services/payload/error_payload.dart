@@ -2,15 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
-/// Json sent to the Java server to request the listing of files, with an
-/// optional search query. Example json (Excluding [BasicPayload]) is:
-/// <pre>
-///     {
-///         "query": "Query"
-///     }
-/// </pre>
-///
-/// <b>query</b>: A string payload to search files to list. This can be null.
+/// See [ErrorPayload](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#ErrorPayload-0)
 class ErrorPayload extends BasicPayload {
   final String stacktrace;
 

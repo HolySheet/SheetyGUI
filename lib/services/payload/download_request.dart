@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
+/// See [DownloadRequest](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#DownloadRequest-5)
 class DownloadRequest extends BasicPayload {
   final String id;
 

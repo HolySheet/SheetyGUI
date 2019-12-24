@@ -2,29 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
-/// Json sent to a client in response to a request the listing of files.
-/// Example json (Excluding [BasicPayload]) is:
-/// <pre>
-///     {
-///         "items": [
-///              {
-///                "name": "test.txt",
-///                "size": 42069,
-///                "sheets": 6,
-///                "date": 123456789,
-///                "id": "abcdefghijklmnopqrstuvwxyz"
-///              }
-///          ]
-///     }
-/// </pre>
-///
-/// <b>items</b>: A collection of files/items retrieved.<br><br>
-/// The following descriptions are in the objects <b>items</b> contains.<br>
-/// <b>name</b>: The name of the file<br>
-/// <b>size</b>: The size of the file in bytes<br>
-/// <b>sheets</b>: The amount of sheets the file consists of<br>
-/// <b>date</b>: The millisecond timestamp the file was created<br>
-/// <b>id</b>: The ID of the file<br>
+/// See [ListResponse](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#ListResponse-2)
 class ListResponse extends BasicPayload {
   final List<ListItem> items;
 

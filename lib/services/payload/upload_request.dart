@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
+/// See [UploadRequest](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#UploadRequest-3)
 class UploadRequest extends BasicPayload {
   final String file;
   final String upload;

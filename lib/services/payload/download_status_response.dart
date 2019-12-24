@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
+/// See [DownloadStatusResponse](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#DownloadStatusResponse-6)
 class DownloadStatusResponse extends BasicPayload {
   final String status;
   final double percentage;

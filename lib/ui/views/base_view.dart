@@ -110,9 +110,8 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
                   ),
                 ),
                 Builder(
-                    builder: (context) => SafeArea(
-                          child: widget._builder(context, child, model),
-                        )),
+                    builder: (context) => widget._builder(context, child, model),
+                ),
               ],
             ),
           ),

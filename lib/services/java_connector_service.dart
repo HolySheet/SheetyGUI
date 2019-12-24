@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:sheety_gui/services/payload/basic_payload.dart';
-import 'package:sheety_gui/services/payload/error.dart';
+import 'package:sheety_gui/services/payload/error_payload.dart';
 import 'package:sheety_gui/services/payload/list_request.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
@@ -18,16 +18,23 @@ class JavaConnectorService {
 
   Map<String, Function(dynamic)> waiting = {};
 
-  void send() {
+  Future<ListResponse> send() async {
+    var completer = Completer<ListResponse>();
+
       sendRequest(ListRequest('Query'), (ListResponse response) {
         print('response = $response');
-      });
+        completer.complete(response);
+      }, (error) {
+        print('Error received while sending request: ${error.message}\n${error.stacktrace}');
+    });
+
+      return completer.future;
   }
 
-  void connect() {
+  Future<void> connect() async {
     print('Connecting...');
 
-    socketStart((data) {
+    await socketStart((data) {
       var json = jsonDecode(data);
       var basicPayload = BasicPayload.fromJson(json);
 
@@ -41,8 +48,6 @@ class JavaConnectorService {
       ({
         PayloadType.ERROR: () {
           var error = ErrorPayload.fromJson(json);
-          print('Error received: ${error.message}\n${error.stacktrace}');
-
           waiting[uuid]?.call(error);
         },
         PayloadType.LIST_RESPONSE: () {
@@ -55,7 +60,7 @@ class JavaConnectorService {
     });
   }
 
-  void socketStart(Function(String) onReceive) async {
+  Future<void> socketStart(Function(String) onReceive) async {
     _socket = await Socket.connect('localhost', 4567);
     print('Connected to: '
         '${_socket.remoteAddress.address}:${_socket.remotePort}');
@@ -66,14 +71,18 @@ class JavaConnectorService {
     });
   }
 
-  void sendRequest<T>(BasicPayload payload, Function(T) response) {
+  void sendRequest<T>(BasicPayload payload, Function(T) response, Function(ErrorPayload) error) {
     var uuid = _uuid.v4();
     payload.state = uuid;
     write(jsonEncode(payload.toJson()));
 
     waiting[uuid] = (payload) {
       waiting.remove(uuid);
-      response(payload);
+      if (payload is ErrorPayload) {
+        error(payload);
+      } else {
+        response(payload);
+      }
     };
   }
 

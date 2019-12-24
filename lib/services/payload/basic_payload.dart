@@ -1,21 +1,6 @@
 import 'package:sheety_gui/services/payload_type.dart';
 
-/// A superclass for all json requests and responses. Example json is:
-/// <pre>
-///     {
-///         "code": 1,
-///         "type": 1,
-///         "message": "Success",
-///         "state": "0317d1f0-6053-4cce-89ba-9e896784820a"
-///     }
-/// </pre>
-///
-/// <b>code</b>: The response code of the payload, 1 being successful, <1 unsuccessful.<br>
-/// <b>type</b>: The type of the response for non-dynamic languages like this one. Derived from the [PayloadType] enum.<br>
-/// <b>message</b>: Any extra details of the request/response, used for things like errors. The state of the request should not
-///      depend on this text. <br>
-/// <b>state</b>: A UUID state generated for a request, and reused for the requests's
-///     response, weather it be a proper response or error. This is to ensure the correct pairing of otherwise unordered requests and responses
+/// See [BasicPayload](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#BasicPayload)
 class BasicPayload {
   int code;
   PayloadType type;
