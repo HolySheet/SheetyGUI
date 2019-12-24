@@ -15,7 +15,7 @@ final expected = jsonDecode(
 ''');
 
 void main() {
-  test('JSON should be serialized to an expected value', () {
+  test('From JSON', () {
     var payload = BasicPayload.fromJson(expected);
 
     expect(1, payload.code);
@@ -24,7 +24,7 @@ void main() {
     expect('0317d1f0-6053-4cce-89ba-9e896784820a', payload.state);
   });
 
-  test('JSON should be deserialized to an expected value', () {
+  test('To JSON', () {
     var payload = BasicPayload(1, PayloadType.LIST_REQUEST, 'Success', '0317d1f0-6053-4cce-89ba-9e896784820a');
 
     expect(expected, payload.toJson());

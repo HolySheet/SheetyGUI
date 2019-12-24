@@ -11,12 +11,13 @@ final expected = jsonDecode('''
   "code": 0,
   "type": 0,
   "message": "Error message",
+  "state": null,
   "stacktrace": "Stacktrace here"
 }
 ''');
 
 void main() {
-  test('JSON should be serialized to an expected value', () {
+  test('From JSON', () {
     var payload = ErrorPayload.fromJson(expected);
 
     expect(0, payload.code);
@@ -25,7 +26,7 @@ void main() {
     expect('Stacktrace here', payload.stacktrace);
   });
 
-  test('JSON should be deserialized to an expected value', () {
+  test('To JSON', () {
     var payload = ErrorPayload('Stacktrace here', 'Error message');
 
     expect(expected, payload.toJson());

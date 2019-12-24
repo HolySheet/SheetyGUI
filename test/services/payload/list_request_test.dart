@@ -10,18 +10,19 @@ final expected = jsonDecode('''
   "code": 1,
   "type": 1,
   "message": "Success",
+  "state": null,
   "query": "Query"
 }
 ''');
 
 void main() {
-  test('JSON should be serialized to an expected value', () {
+  test('From JSON', () {
     var payload = ListRequest.fromJson(expected);
 
     expect('Query', payload.query);
   });
 
-  test('JSON should be deserialized to an expected value', () {
+  test('To JSON', () {
     var payload = ListRequest('Query');
 
     expect(expected, payload.toJson());

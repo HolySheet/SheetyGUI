@@ -21,7 +21,8 @@ class ErrorPayload extends BasicPayload {
       : stacktrace = json['stacktrace'],
         super.fromJson(json, type: PayloadType.ERROR);
 
-  Map<String, dynamic> toJson() => super.toJson()..addAll({'stacktrace': stacktrace});
+  Map<String, dynamic> toJson() =>
+      super.toJson()..addAll({'stacktrace': stacktrace});
 
   @override
   String toString() {

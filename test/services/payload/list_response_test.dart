@@ -7,8 +7,9 @@ import 'package:test/test.dart';
 final expected = jsonDecode('''
 {
   "code": 1,
-  "type": 1,
+  "type": 2,
   "message": "Success",
+  "state": null,
   "items": [
     {
       "name": "test.txt",
@@ -22,7 +23,7 @@ final expected = jsonDecode('''
 ''');
 
 void main() {
-  test('JSON should be serialized to an expected value', () {
+  test('From JSON', () {
     var payload = ListResponse.fromJson(expected);
 
     var first = payload.items.first;
@@ -34,7 +35,7 @@ void main() {
     expect('abcdefghijklmnopqrstuvwxyz', first.id);
   });
 
-  test('JSON should be deserialized to an expected value', () {
+  test('To JSON', () {
     var payload = ListResponse([ListItem('test.txt', 54321, 6, 123456789, 'abcdefghijklmnopqrstuvwxyz')]);
 
     expect(expected, payload.toJson());
