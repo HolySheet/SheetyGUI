@@ -25,6 +25,8 @@ dependencies:
   async: ^2.4.0
   uuid: ^2.0.4
   outline_material_icons: ^0.1.1
+  filesize: ^1.0.4
+  intl: ^0.16.0
 
 dev_dependencies:
   test: 1.9.4

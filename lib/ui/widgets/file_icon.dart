@@ -5,27 +5,33 @@ import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
 
 class FileIcon extends StatefulWidget {
+  final bool selected;
   final ListItem listItem;
+  final Function(ListItem) onTap;
 
-  const FileIcon({Key key, this.listItem}) : super(key: key);
+  FileIcon({Key key, this.selected, this.listItem, this.onTap}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => FileIconState(listItem);
+  State<StatefulWidget> createState() => FileIconState(listItem, onTap);
 }
 
 class FileIconState extends State<FileIcon> {
   final ListItem listItem;
+  final Function(ListItem) onTap;
 
-  FileIconState(this.listItem);
+  FileIconState(this.listItem, this.onTap);
 
   @override
   Widget build(BuildContext context) => Card(
+    elevation: widget.selected ? 10 : 5,
+        shape: RoundedRectangleBorder(side: widget.selected ? BorderSide(color: Colors.blue) : BorderSide.none, borderRadius: BorderRadius.circular(4)),
         margin: EdgeInsets.all(10),
         child: SizedBox(
             width: 125,
             height: 125,
             child: GestureDetector(
-              onTap: () => print('Tap!'),
+              onTap: () => onTap?.call(listItem),
+              onSecondaryTapDown: (tdd) => print('Secondary'),
               child: Stack(
                 children: [
                   Padding(

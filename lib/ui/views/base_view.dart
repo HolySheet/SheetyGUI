@@ -14,13 +14,12 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
   final Function(T) fabAdd;
   final bool showFab;
 
-  BaseView(
-      {GlobalKey<ScaffoldState> scaffoldKey,
-      ScopedModelDescendantBuilder<T> builder,
-      this.onModelReady,
-      this.onModelEnd,
-      this.fabAdd,
-      this.showFab = true})
+  BaseView({GlobalKey<ScaffoldState> scaffoldKey,
+    ScopedModelDescendantBuilder<T> builder,
+    this.onModelReady,
+    this.onModelEnd,
+    this.fabAdd,
+    this.showFab = true})
       : _scaffoldKey = scaffoldKey,
         _builder = builder;
 
@@ -34,7 +33,8 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
 
   @override
   void initState() {
-    otherBuilder = (context, child, BaseModel model) => BusyOverlay(
+    otherBuilder = (context, child, BaseModel model) =>
+        BusyOverlay(
           show: model.state == ViewState.Busy,
           child: Scaffold(
             resizeToAvoidBottomInset: true,
@@ -42,18 +42,19 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
             floatingActionButton: (!widget.showFab
                 ? null
                 : FloatingActionButton(
-                    child: Icon(Icons.add),
-                    onPressed: () {
-                      if (widget.fabAdd != null) {
-                        widget.fabAdd(_model);
-                      }
-                    },
-                  )),
+              child: Icon(Icons.add),
+              onPressed: () {
+                if (widget.fabAdd != null) {
+                  widget.fabAdd(_model);
+                }
+              },
+            )),
             body: Row(
               children: [
                 Container(
                   child: Card(
                     elevation: 5,
+                    shape: ContinuousRectangleBorder(),
                     margin: EdgeInsets.all(0),
                     child: Column(
                       children: [
@@ -110,7 +111,7 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
                   ),
                 ),
                 Builder(
-                    builder: (context) => widget._builder(context, child, model),
+                  builder: (context) => widget._builder(context, child, model),
                 ),
               ],
             ),

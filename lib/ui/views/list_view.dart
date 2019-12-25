@@ -1,3 +1,4 @@
+import 'package:filesize/filesize.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -11,22 +12,148 @@ class FileListView extends StatefulWidget {
   State<StatefulWidget> createState() => FileListViewState();
 }
 
-class FileListViewState extends State<FileListView> {
+class FileListViewState extends State<FileListView>
+    with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
+    final fileTitleDisplay =
+        Theme.of(context).textTheme.display1.copyWith(fontSize: 24);
     return BaseView<ListModel>(
       showFab: true,
-//      fabAdd: (model) => model.createNew(),
-      onModelReady: (model) => model.refreshFiles(),
+      onModelReady: (model) {
+        model.refreshFiles();
+        model.init(this);
+      },
       builder: (context, child, model) => Expanded(
-        child: Column(
+        child: Row(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Wrap(
-                children: model.listItems.map((item) => FileIcon(listItem: item)).toList()
+            Expanded(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Wrap(
+                      children: model.listItems
+                          .map((item) => FileIcon(
+                              selected: model.selected == item,
+                              listItem: item,
+                              onTap: model.tapFile))
+                          .toList(),
+                    ),
+                  ),
+                ],
               ),
             ),
+//              if (!model.isCollapsed)
+            if (!model.isCollapsed)
+              GestureDetector(
+//                  onHorizontalDragStart: (start) => print('Starting ${start.globalPosition.dx}/${start.localPosition.dx}'),
+                onHorizontalDragStart: model.sideDragStart,
+//                  onHorizontalDragUpdate: (update) => print('Ending ${update.globalPosition.dx}/${update.localPosition.dx}/${update.delta}/${update.primaryDelta}'),
+                onHorizontalDragUpdate: model.sideDragUpdate,
+//                  onHorizontalDragEnd: (end) => print('Ending ${end.primaryVelocity}/${end.velocity}'),
+                onHorizontalDragEnd: model.sideDragEnd,
+                child: AnimatedBuilder(
+                  animation: model.animationController,
+                  builder: (c, w) => Transform.translate(
+                    offset: Offset(model.widthAnimation.value, 0),
+                    child: w,
+                  ),
+                  child: SizedBox(
+                    width: 250,
+                    height: double.infinity,
+                    child: Card(
+                      shape: ContinuousRectangleBorder(),
+                      elevation: 5,
+                      margin: EdgeInsets.all(0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Text(model.selected?.name ?? '',
+                                  style: fileTitleDisplay),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 20),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  filesize(model.selected?.size ?? 0),
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context).textTheme.body1,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  '${model.selected?.sheets ?? ''} Sheets',
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context).textTheme.body1,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  'Last Modified: ${model.formatDate(model.selected?.date ?? 0)}',
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context).textTheme.body1,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  'Ownership',
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context).textTheme.body2,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.link),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Shared',
+                                      textAlign: TextAlign.left,
+                                      style: Theme.of(context).textTheme.body1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  'Owned by Adam Yarris',
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context).textTheme.body1,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
