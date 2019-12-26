@@ -14,8 +14,11 @@ class FileListView extends StatefulWidget {
 
 class FileListViewState extends State<FileListView>
     with SingleTickerProviderStateMixin {
+  FocusNode focusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
+    FocusScope.of(context).requestFocus(focusNode);
     final fileTitleDisplay =
         Theme.of(context).textTheme.display1.copyWith(fontSize: 24);
     return BaseView<ListModel>(
@@ -28,24 +31,27 @@ class FileListViewState extends State<FileListView>
         child: Row(
           children: [
             Expanded(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: Wrap(
-                      children: model.listItems
-                          .map((item) => FileIcon(
-                              selected: model.selected == item,
-                              listItem: item,
-                              onTap: model.tapFile))
-                          .toList(),
+              child: RawKeyboardListener(
+                focusNode: focusNode,
+                onKey: model.onKey,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Wrap(
+                        children: model.listItems
+                            .map((item) => FileIcon(
+                                selected: model.selected.contains(item),
+                                listItem: item,
+                                onTap: model.tapFile))
+                            .toList(),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-//              if (!model.isCollapsed)
-            if (!model.isCollapsed)
+            if (model.showSidebar)
               GestureDetector(
                 onHorizontalDragStart: model.sideDragStart,
                 onHorizontalDragUpdate: model.sideDragUpdate,
@@ -69,53 +75,13 @@ class FileListViewState extends State<FileListView>
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(top: 10),
-                              child: Text(model.selected?.name ?? '',
+                              child: Text(model.showingSelected.name ?? '',
                                   style: fileTitleDisplay),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 20),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  filesize(model.selected?.size ?? 0),
-                                  textAlign: TextAlign.left,
-                                  style: Theme.of(context).textTheme.body1,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  '${model.selected?.sheets ?? ''} Sheets',
-                                  textAlign: TextAlign.left,
-                                  style: Theme.of(context).textTheme.body1,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  'Last Modified: ${model.formatDate(model.selected?.date ?? 0)}',
-                                  textAlign: TextAlign.left,
-                                  style: Theme.of(context).textTheme.body1,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  'Ownership',
-                                  textAlign: TextAlign.left,
-                                  style: Theme.of(context).textTheme.body2,
-                                ),
-                              ),
-                            ),
+                            lineText(filesize(model.showingSelected.size ?? 0), topPadding: 20),
+                            lineText('${model.showingSelected.sheets ?? ''} Sheets'),
+                            lineText('Last Modified: ${model.formatDate(model.showingSelected.date ?? 0)}'),
+                            lineText('Ownership', style: Theme.of(context).textTheme.body2),
                             Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: SizedBox(
@@ -133,17 +99,7 @@ class FileListViewState extends State<FileListView>
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  'Owned by Adam Yarris',
-                                  textAlign: TextAlign.left,
-                                  style: Theme.of(context).textTheme.body1,
-                                ),
-                              ),
-                            ),
+                            lineText('Owned by Adam Yarris')
                           ],
                         ),
                       ),
@@ -156,4 +112,16 @@ class FileListViewState extends State<FileListView>
       ),
     );
   }
+
+  Widget lineText(String text, {TextStyle style, double topPadding = 10}) => Padding(
+        padding: EdgeInsets.only(top: topPadding),
+        child: SizedBox(
+          width: double.infinity,
+          child: Text(
+            text,
+            textAlign: TextAlign.left,
+            style: style ?? Theme.of(context).textTheme.body1,
+          ),
+        ),
+      );
 }

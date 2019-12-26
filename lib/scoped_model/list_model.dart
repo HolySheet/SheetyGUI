@@ -1,4 +1,5 @@
 import 'package:flutter/animation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/gestures/drag_details.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
@@ -6,18 +7,24 @@ import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
+import 'package:sheety_gui/utility.dart';
 
 class ListModel extends BaseModel {
+  static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011, keyLabel: r'ctrl', debugName: 'Key Control');
+
   final _conn = locator<JavaConnectorService>();
 
   List<ListItem> listItems = [];
-  ListItem selected;
+  List<ListItem> selected = [];
+  ListItem showingSelected; // Filled with dummy values when multiple selected
+  bool multiSelect = false;
 
   // ANIMATION
 
   AnimationController animationController;
   Animation<double> widthAnimation;
-  bool isCollapsed = true;
+  bool showSidebar = false;
+//  bool isCollapsed = true;
 
   double startX = 0;
   double lastX = 0;
@@ -37,18 +44,59 @@ class ListModel extends BaseModel {
         .whenComplete(notifyListeners);
   }
 
+  void onKey(RawKeyEvent event) {
+    multiSelect = event.data.logicalKey == keyControl;
+  }
+
   void tapFile(ListItem item) {
-    if (selected == item) {
-      selected = null;
-      animationController.forward().whenComplete(() {
-        isCollapsed = true;
-        notifyListeners();
-      });
+    if (selected.contains(item)) {
+      selected.remove(item);
+      notifyListeners();
+
+      if (multiSelect) {
+        if (selected.isEmpty) {
+          animationController.forward().whenComplete(() {
+            showSidebar = false;
+            showingSelected = null;
+            notifyListeners();
+          });
+        } else {
+          updateSelected();
+          notifyListeners();
+        }
+      } else {
+        selected = [];
+        animationController.forward().whenComplete(() {
+          showSidebar = false;
+          showingSelected = null;
+          notifyListeners();
+        });
+      }
     } else {
-      selected = item;
+      showSidebar = true;
+
+      if (!multiSelect) {
+        selected.clear();
+      }
+
+      selected.add(item);
+
+      updateSelected();
+      notifyListeners();
       resetCollapse();
     }
   }
+
+  void updateSelected() {
+    if (selected.length > 1) {
+      showingSelected = getCombined();
+    } else {
+      showingSelected = selected[0];
+    }
+  }
+
+  ListItem getCombined() =>
+    ListItem('${selected.length} Selected', selected.sumMap((item) => item.size), selected.sumMap((item) => item.sheets), selected[0].date, selected.map((item) => item.id).join(', '));
 
   String formatDate(int date) {
     var dateTime = DateTime.fromMillisecondsSinceEpoch(date);
@@ -82,31 +130,18 @@ class ListModel extends BaseModel {
     var moved = lastX - startX;
     if (moved < 0) return;
     animationController.value = moved;
-    if (moved / 250 == 1) {
-      isCollapsed = true;
-    }
   }
 
   void sideDragEnd(DragEndDetails end) {
     var percentage = (lastX - startX) / 250;
     var velocity = end.primaryVelocity; // Pixels per second
     if (percentage >= 0.1 || velocity >= 200) {
-      if (!isCollapsed) {
         animationController.forward(from: lastX - startX).whenComplete(() {
-          isCollapsed = true;
+          showSidebar = false;
           notifyListeners();
         });
-      }
     }
   }
 
-  void resetCollapse() {
-    if (isCollapsed) {
-      isCollapsed = false;
-      notifyListeners();
-      animationController.reverse();
-    } else {
-      notifyListeners();
-    }
-  }
+  TickerFuture resetCollapse() => animationController.reverse();
 }
