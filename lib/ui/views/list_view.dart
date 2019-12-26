@@ -1,9 +1,9 @@
+import 'package:angles/angles.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sheety_gui/scoped_model/list_model.dart';
-import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/ui/views/base_view.dart';
 import 'package:sheety_gui/ui/widgets/file_icon.dart';
 
@@ -13,7 +13,7 @@ class FileListView extends StatefulWidget {
 }
 
 class FileListViewState extends State<FileListView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   FocusNode focusNode = FocusNode();
 
   @override
@@ -22,11 +22,22 @@ class FileListViewState extends State<FileListView>
     final fileTitleDisplay =
         Theme.of(context).textTheme.display1.copyWith(fontSize: 24);
     return BaseView<ListModel>(
-      showFab: true,
       onModelReady: (model) {
         model.refreshFiles();
         model.init(this);
       },
+      fab: (context, model) => FloatingActionButton(
+        key: model.fabKey,
+        child: AnimatedBuilder(
+          animation: model.newButtonAngleAnimation,
+          builder: (c, widget) => Transform.rotate(
+            angle: Angle.fromDegrees(model.newButtonAngleAnimation.value).radians,
+            child: widget,
+          ),
+          child: Icon(Icons.add),
+        ),
+        onPressed: () => model.showNewPopup(context),
+      ),
       builder: (context, child, model) => Expanded(
         child: Row(
           children: [
@@ -57,9 +68,9 @@ class FileListViewState extends State<FileListView>
                 onHorizontalDragUpdate: model.sideDragUpdate,
                 onHorizontalDragEnd: model.sideDragEnd,
                 child: AnimatedBuilder(
-                  animation: model.animationController,
+                  animation: model.sidebarAnimationController,
                   builder: (c, widget) => Transform.translate(
-                    offset: Offset(model.widthAnimation.value, 0),
+                    offset: Offset(model.sidebarWidthAnimation.value, 0),
                     child: widget,
                   ),
                   child: SizedBox(

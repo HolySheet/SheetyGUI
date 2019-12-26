@@ -2,7 +2,6 @@ import 'package:angles/angles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:sheety_gui/enums/view_states.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/ui/widgets/busy_overlay.dart';
@@ -12,15 +11,13 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
   final ScopedModelDescendantBuilder<T> _builder;
   final Function(T) onModelReady;
   final Function(T) onModelEnd;
-  final Function(T) fabAdd;
-  final bool showFab;
+  final Function(BuildContext, T) fab;
 
   BaseView({GlobalKey<ScaffoldState> scaffoldKey,
     ScopedModelDescendantBuilder<T> builder,
     this.onModelReady,
     this.onModelEnd,
-    this.fabAdd,
-    this.showFab = true})
+    this.fab})
       : _scaffoldKey = scaffoldKey,
         _builder = builder;
 
@@ -34,93 +31,76 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> with Single
 
   @override
   void initState() {
-    _model.baseInit(this);
     otherBuilder = (context, child, BaseModel model) =>
-        BusyOverlay(
-          show: model.state == ViewState.Busy,
-          child: Scaffold(
-            resizeToAvoidBottomInset: true,
-            key: widget._scaffoldKey,
-            floatingActionButton: (!widget.showFab
-                ? null
-                : FloatingActionButton(
-              key: model.fabKey,
-              child: AnimatedBuilder(
-                animation: model.newButtonAngleAnimation,
-                builder: (c, widget) => Transform.rotate(
-                  angle: Angle.fromDegrees(model.newButtonAngleAnimation.value).radians,
-                  child: widget,
-                ),
-                child: Icon(Icons.add),
-              ),
-              onPressed: () => model.showNewPopup(context),
-            )),
-            body: Row(
-              children: [
-                Container(
-                  child: Card(
-                    elevation: 5,
-                    shape: ContinuousRectangleBorder(),
-                    margin: EdgeInsets.all(0),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: SizedBox(
-                            width: 36,
-                            height: 36,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(
-                                      'https://lh3.googleusercontent.com/-3hnUnOvs4Pg/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rc4nDtmlwLdIFlLDoVo1oiZGWyhnQ.CMID/photo.jpg'),
-                                ),
+        Scaffold(
+          resizeToAvoidBottomInset: true,
+          key: widget._scaffoldKey,
+          floatingActionButton: widget.fab(context, model),
+          body: Row(
+            children: [
+              Container(
+                child: Card(
+                  elevation: 5,
+                  shape: ContinuousRectangleBorder(),
+                  margin: EdgeInsets.all(0),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: NetworkImage(
+                                    'https://lh3.googleusercontent.com/-3hnUnOvs4Pg/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rc4nDtmlwLdIFlLDoVo1oiZGWyhnQ.CMID/photo.jpg'),
                               ),
                             ),
                           ),
                         ),
-                        getLeftButton(
-                            icon: Icons.view_module,
-                            label: 'File list',
-                            onPressed: () {
-                              print('Pressed list');
-                            }),
-                        getLeftButton(
-                            icon: Icons.developer_board,
-                            label: 'Console',
-                            onPressed: () {
-                              print('Pressed console');
-                            }),
-                        getLeftButton(
-                            icon: Icons.schedule,
-                            label: 'Schedule',
-                            onPressed: () {
-                              print('Pressed schedule');
-                            }),
-                        getLeftButton(
-                            icon: Icons.insert_drive_file,
-                            label: 'Logs',
-                            onPressed: () {
-                              print('Pressed logs');
-                            }),
-                        Spacer(),
-                        getLeftButton(
-                            icon: Icons.settings,
-                            label: 'Settings',
-                            onPressed: () {
-                              print('Pressed settings');
-                            }),
-                      ],
-                    ),
+                      ),
+                      getLeftButton(
+                          icon: Icons.view_module,
+                          label: 'File list',
+                          onPressed: () {
+                            print('Pressed list');
+                          }),
+                      getLeftButton(
+                          icon: Icons.developer_board,
+                          label: 'Console',
+                          onPressed: () {
+                            print('Pressed console');
+                          }),
+                      getLeftButton(
+                          icon: Icons.schedule,
+                          label: 'Schedule',
+                          onPressed: () {
+                            print('Pressed schedule');
+                          }),
+                      getLeftButton(
+                          icon: Icons.insert_drive_file,
+                          label: 'Logs',
+                          onPressed: () {
+                            print('Pressed logs');
+                          }),
+                      Spacer(),
+                      getLeftButton(
+                          icon: Icons.settings,
+                          label: 'Settings',
+                          onPressed: () {
+                            print('Pressed settings');
+                          }),
+                    ],
                   ),
                 ),
-                Builder(
-                  builder: (context) => widget._builder(context, child, model),
-                ),
-              ],
-            ),
+              ),
+              Builder(
+                builder: (context) => widget._builder(context, child, model),
+              ),
+            ],
           ),
         );
 

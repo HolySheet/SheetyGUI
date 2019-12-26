@@ -1,4 +1,8 @@
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:flutter/animation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +16,7 @@ class ListModel extends BaseModel {
   static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011, keyLabel: r'ctrl', debugName: 'Key Control');
 
   final _conn = locator<JavaConnectorService>();
+  final fabKey = GlobalKey();
 
   List<ListItem> listItems = [];
   List<ListItem> selected = [];
@@ -20,8 +25,12 @@ class ListModel extends BaseModel {
 
   // ANIMATION
 
-  AnimationController animationController;
-  Animation<double> widthAnimation;
+  AnimationController sidebarAnimationController;
+  Animation<double> sidebarWidthAnimation;
+
+  AnimationController newButtonAngleAnimationController;
+  Animation<double> newButtonAngleAnimation;
+
   bool showSidebar = false;
 
   double startX = 0;
@@ -45,7 +54,7 @@ class ListModel extends BaseModel {
 
       if (multiSelect) {
         if (selected.isEmpty) {
-          animationController.forward().whenComplete(() {
+          sidebarAnimationController.forward().whenComplete(() {
             showSidebar = false;
             showingSelected = null;
             notifyListeners();
@@ -56,7 +65,7 @@ class ListModel extends BaseModel {
         }
       } else {
         selected = [];
-        animationController.forward().whenComplete(() {
+        sidebarAnimationController.forward().whenComplete(() {
           showSidebar = false;
           showingSelected = null;
           notifyListeners();
@@ -96,42 +105,120 @@ class ListModel extends BaseModel {
 
   // ANIMATION
 
-  void init(SingleTickerProviderStateMixin tickProvider) {
-    animationController = AnimationController(
+  void init(TickerProviderStateMixin tickProvider) {
+    sidebarAnimationController = AnimationController(
         lowerBound: 0,
         upperBound: 250,
         vsync: tickProvider,
         duration: Duration(milliseconds: 500));
 
-    widthAnimation =
-        Tween<double>(begin: 0, end: 1).animate(animationController);
+    sidebarWidthAnimation =
+        Tween<double>(begin: 0, end: 1).animate(sidebarAnimationController);
 
-    notifyListeners();
+    sidebarAnimationController.value = 250;
 
-    animationController.value = 250;
+    newButtonAngleAnimationController = AnimationController(
+        lowerBound: 0,
+        upperBound: 45,
+        vsync: tickProvider,
+        duration: Duration(milliseconds: 100));
+
+    newButtonAngleAnimation = Tween<double>(begin: 0, end: 1)
+        .animate(newButtonAngleAnimationController);
   }
 
-  void sideDragStart(DragStartDetails start) {
-    lastX = startX = start.globalPosition.dx;
-  }
+  void sideDragStart(DragStartDetails start) =>
+      lastX = startX = start.globalPosition.dx;
 
   void sideDragUpdate(DragUpdateDetails update) {
     lastX = update.globalPosition.dx;
-    var moved = lastX - startX;
-    if (moved < 0) return;
-    animationController.value = moved;
+    sidebarAnimationController.value = max(lastX - startX, 0);
   }
 
   void sideDragEnd(DragEndDetails end) {
     var percentage = (lastX - startX) / 250;
     var velocity = end.primaryVelocity; // Pixels per second
     if (percentage >= 0.1 || velocity >= 200) {
-        animationController.forward(from: lastX - startX).whenComplete(() {
+        sidebarAnimationController.forward(from: lastX - startX).whenComplete(() {
           showSidebar = false;
           notifyListeners();
         });
     }
   }
 
-  TickerFuture resetCollapse() => animationController.reverse();
+  TickerFuture resetCollapse() => sidebarAnimationController.reverse();
+
+  void showNewPopup(BuildContext context) {
+    newButtonAngleAnimationController.forward();
+
+    Navigator.of(context).push(CustomDialog(fabKey.globalPaintBounds.center, () => newButtonAngleAnimationController.reverse(), () {
+      print('Insert');
+    }, () {
+      print('Upload');
+    }));
+  }
+}
+
+class CustomDialog extends PopupRoute {
+  final Offset buttonPosition;
+  final Function() complete;
+  final Function() insert;
+  final Function() upload;
+
+  CustomDialog(this.buttonPosition, this.complete, this.insert, this.upload);
+
+  @override
+  Color get barrierColor => Colors.white.withAlpha(0);
+
+  @override
+  bool get barrierDismissible => true;
+
+  @override
+  String get barrierLabel => null;
+
+  static const double height = 100;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) => Stack(children: [
+    AnimatedBuilder(
+      animation: animation,
+      builder: (c, child) => Transform.translate(
+        offset: Offset(buttonPosition.dx - (58 / 2), buttonPosition.dy - lerpDouble(100, height + 50, animation.value)),
+        child: Transform.scale(
+          scale: animation.value,
+          child: child,
+        ),
+      ),
+      child: Card(
+        elevation: 10,
+        shape: RoundedRectangleBorder(side: BorderSide.none, borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          width: 50,
+          height: height,
+          child: Column(
+            children: [
+              IconButton(
+                icon: Icon(Icons.insert_drive_file, semanticLabel: 'Insert'), // Idk what this should do
+                onPressed: insert,
+              ),
+              IconButton(
+                icon: Icon(Icons.file_upload, semanticLabel: 'Upload'), // Upload a given file
+                onPressed: upload,
+              ),
+            ],
+          ),
+        ),
+      ),
+    )
+  ]);
+
+  @override
+  void didComplete(dynamic result) {
+    super.didComplete(result);
+    complete();
+  }
+
+  @override
+  Duration get transitionDuration => Duration(milliseconds: 300);
 }
