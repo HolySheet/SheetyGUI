@@ -5,15 +5,15 @@ class BusyOverlay extends StatelessWidget {
   final String title;
   final bool show;
 
-  const BusyOverlay({this.child,
-    this.title = 'Please wait...',
-    this.show = false});
+  const BusyOverlay(
+      {this.child, this.title = 'Please wait...', this.show = false});
 
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
     return Material(
-        child: Stack(children: <Widget>[
+      child: Stack(
+        children: <Widget>[
           child,
           IgnorePointer(
             child: Opacity(
@@ -36,6 +36,8 @@ class BusyOverlay extends StatelessWidget {
                   ),
                 )),
           ),
-        ]));
+        ],
+      ),
+    );
   }
 }

@@ -47,17 +47,14 @@ class FileListViewState extends State<FileListView>
 //              if (!model.isCollapsed)
             if (!model.isCollapsed)
               GestureDetector(
-//                  onHorizontalDragStart: (start) => print('Starting ${start.globalPosition.dx}/${start.localPosition.dx}'),
                 onHorizontalDragStart: model.sideDragStart,
-//                  onHorizontalDragUpdate: (update) => print('Ending ${update.globalPosition.dx}/${update.localPosition.dx}/${update.delta}/${update.primaryDelta}'),
                 onHorizontalDragUpdate: model.sideDragUpdate,
-//                  onHorizontalDragEnd: (end) => print('Ending ${end.primaryVelocity}/${end.velocity}'),
                 onHorizontalDragEnd: model.sideDragEnd,
                 child: AnimatedBuilder(
                   animation: model.animationController,
-                  builder: (c, w) => Transform.translate(
+                  builder: (c, widget) => Transform.translate(
                     offset: Offset(model.widthAnimation.value, 0),
-                    child: w,
+                    child: widget,
                   ),
                   child: SizedBox(
                     width: 250,

@@ -1,3 +1,4 @@
+import 'package:angles/angles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -27,12 +28,13 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
   _BaseViewState<T> createState() => _BaseViewState<T>();
 }
 
-class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
+class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> with SingleTickerProviderStateMixin {
   T _model = locator<T>();
   ScopedModelDescendantBuilder<T> otherBuilder;
 
   @override
   void initState() {
+    _model.baseInit(this);
     otherBuilder = (context, child, BaseModel model) =>
         BusyOverlay(
           show: model.state == ViewState.Busy,
@@ -42,12 +44,16 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> {
             floatingActionButton: (!widget.showFab
                 ? null
                 : FloatingActionButton(
-              child: Icon(Icons.add),
-              onPressed: () {
-                if (widget.fabAdd != null) {
-                  widget.fabAdd(_model);
-                }
-              },
+              key: model.fabKey,
+              child: AnimatedBuilder(
+                animation: model.newButtonAngleAnimation,
+                builder: (c, widget) => Transform.rotate(
+                  angle: Angle.fromDegrees(model.newButtonAngleAnimation.value).radians,
+                  child: widget,
+                ),
+                child: Icon(Icons.add),
+              ),
+              onPressed: () => model.showNewPopup(context),
             )),
             body: Row(
               children: [
