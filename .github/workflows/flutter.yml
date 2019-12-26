@@ -17,7 +17,8 @@ jobs:
     - uses: subosito/flutter-action@v1.1.1
     - run: flutter pub get
     - name: Setting up flutter desktop
-      run: setup.sh
+      run: start "" "%ProgramFiles%\Git\git-bash.exe" -c "/home/runner/work/SheetyGUI/SheetyGUI/setup.sh"
+    - run: dir
     - name: Test
       run: flutter test
     - name: Building
