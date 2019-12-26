@@ -1,6 +1,5 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/gestures/drag_details.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
@@ -24,20 +23,11 @@ class ListModel extends BaseModel {
   AnimationController animationController;
   Animation<double> widthAnimation;
   bool showSidebar = false;
-//  bool isCollapsed = true;
 
   double startX = 0;
   double lastX = 0;
 
-  void click() {
-    print('Click!');
-
-    _conn.connect();
-  }
-
   void refreshFiles() {
-    print('Refreshing files!');
-
     _conn
         .send()
         .then((response) => listItems = response.items)
