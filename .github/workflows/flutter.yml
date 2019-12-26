@@ -16,6 +16,6 @@ jobs:
         java-version: '12.x'
     - uses: subosito/flutter-action@v1.1.1
       with:
-        channel: 'master' # optional, default to: 'stable'
+        flutter-version: '1.13.2'
     - run: flutter pub get
     - run: flutter test
