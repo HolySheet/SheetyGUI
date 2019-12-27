@@ -36,7 +36,7 @@ final expected = jsonDecode('''
 
 void main() {
   test('From JSON', () {
-    var payload = CodeExecutionCallbackRequest.fromJson(expected);
+    var payload = CodeExecutionCallbackResponse.fromJson(expected);
 
     expect('030ccb35-8e0b-4c13-a0a1-9a6347ad8849', payload.callbackState);
     expect(<String>['theTime', 'theTimeHalved'], payload.snippetResult);
@@ -45,7 +45,7 @@ void main() {
   });
 
   test('To JSON', () {
-    var payload = CodeExecutionCallbackRequest('030ccb35-8e0b-4c13-a0a1-9a6347ad8849', ['theTime', 'theTimeHalved'], [SerializedVariable('theTime', 'java.lang.Long', 1577394471130), SerializedVariable('theTimeHalved', 'java.lang.Long', 788697235565)]);
+    var payload = CodeExecutionCallbackResponse('030ccb35-8e0b-4c13-a0a1-9a6347ad8849', ['theTime', 'theTimeHalved'], [SerializedVariable('theTime', 'java.lang.Long', 1577394471130), SerializedVariable('theTimeHalved', 'java.lang.Long', 788697235565)]);
 
     expect(expected, payload.toJson());
   });
