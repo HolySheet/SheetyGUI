@@ -4,6 +4,7 @@ import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload/serialized_variable.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
+/// See [CodeExecutionResponse](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#CodeExecutionResponse-10)
 class CodeExecutionResponse extends BasicPayload {
   final List<String> snippetResult;
   final List<SerializedVariable> variables;
