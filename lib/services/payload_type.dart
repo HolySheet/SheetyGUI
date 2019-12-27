@@ -9,6 +9,9 @@ class PayloadType {
   static const PayloadType DOWNLOAD_STATUS_RESPONSE = PayloadType(6, false);
   static const PayloadType REMOVE_REQUEST = PayloadType(7, true);
   static const PayloadType REMOVE_STATUS_RESPONSE = PayloadType(8, false);
+  static const PayloadType CODE_EXECUTION_REQUEST = PayloadType(9, true);
+  static const PayloadType CODE_EXECUTION_RESPONSE = PayloadType(10, false);
+  static const PayloadType CODE_EXECUTION_CALLBACK_RESPONSE = PayloadType(11, false);
 
   static const List<PayloadType> values = [ERROR, LIST_REQUEST, LIST_RESPONSE, UPLOAD_REQUEST, UPLOAD_STATUS_RESPONSE, DOWNLOAD_REQUEST, DOWNLOAD_STATUS_RESPONSE, REMOVE_REQUEST, REMOVE_STATUS_RESPONSE];
 
