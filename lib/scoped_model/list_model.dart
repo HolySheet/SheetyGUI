@@ -20,6 +20,7 @@ class ListModel extends BaseModel {
   final _conn = locator<JavaConnectorService>();
   final _selection = locator<FileSelectionService>();
   final fabKey = GlobalKey();
+  final focusNode = FocusNode();
 
   List<ListItem> listItems = [];
   List<ListItem> selected = [];
@@ -50,7 +51,8 @@ class ListModel extends BaseModel {
     multiSelect = event.data.logicalKey == keyControl;
   }
 
-  void tapFile(ListItem item) {
+  void tapFile(BuildContext context, ListItem item) {
+    FocusScope.of(context).requestFocus(focusNode);
     if (selected.contains(item)) {
       selected.remove(item);
       notifyListeners();
@@ -112,7 +114,8 @@ class ListModel extends BaseModel {
 
   // ANIMATION
 
-  void init(TickerProviderStateMixin tickProvider) {
+  void init(TickerProvider tickProvider) {
+    super.init(tickProvider);
     sidebarAnimationController = AnimationController(
         lowerBound: 0,
         upperBound: 250,
@@ -160,12 +163,15 @@ class ListModel extends BaseModel {
 
     Navigator.of(context).push(CustomDialog(fabKey.globalPaintBounds.center,
         () => newButtonAngleAnimationController.reverse(), () {
-      print('Insert');
+      // TODO: This is temporary
+      Navigator.of(context).pop();
+      showLoading()?.then((_) => dummyAnimation());
     }, () {
       Navigator.of(context).pop();
       _selection.sendRequest(
+          multi: true,
           selected: (files) {
-            print('Selected file: ${files.first}');
+            print('Selected files: $files');
           },
           cancelled: () => print('Cancelled file open'));
     }));

@@ -14,17 +14,14 @@ class FileListView extends StatefulWidget {
 
 class FileListViewState extends State<FileListView>
     with TickerProviderStateMixin {
-  FocusNode focusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
-    FocusScope.of(context).requestFocus(focusNode);
     final fileTitleDisplay =
         Theme.of(context).textTheme.display1.copyWith(fontSize: 24);
     return BaseView<ListModel>(
       onModelReady: (model) {
         model.refreshFiles();
-        model.init(this);
       },
       fab: (context, model) => FloatingActionButton(
         key: model.fabKey,
@@ -43,7 +40,7 @@ class FileListViewState extends State<FileListView>
           children: [
             Expanded(
               child: RawKeyboardListener(
-                focusNode: focusNode,
+                focusNode: model.focusNode,
                 onKey: model.onKey,
                 child: Column(
                   children: [
@@ -68,9 +65,9 @@ class FileListViewState extends State<FileListView>
                 onHorizontalDragUpdate: model.sideDragUpdate,
                 onHorizontalDragEnd: model.sideDragEnd,
                 child: AnimatedBuilder(
-                  animation: model.sidebarAnimationController,
+                  animation: model.bottomAnimationController,
                   builder: (c, widget) => Transform.translate(
-                    offset: Offset(model.sidebarWidthAnimation.value, 0),
+                    offset: Offset(model.bottomAnimation.value, 0),
                     child: widget,
                   ),
                   child: SizedBox(

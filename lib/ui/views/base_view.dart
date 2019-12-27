@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
-import 'package:sheety_gui/ui/widgets/busy_overlay.dart';
+import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 
 class BaseView<T extends BaseModel> extends StatefulWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey;
@@ -13,11 +13,12 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
   final Function(T) onModelEnd;
   final Function(BuildContext, T) fab;
 
-  BaseView({GlobalKey<ScaffoldState> scaffoldKey,
-    ScopedModelDescendantBuilder<T> builder,
-    this.onModelReady,
-    this.onModelEnd,
-    this.fab})
+  BaseView(
+      {GlobalKey<ScaffoldState> scaffoldKey,
+      ScopedModelDescendantBuilder<T> builder,
+      this.onModelReady,
+      this.onModelEnd,
+      this.fab})
       : _scaffoldKey = scaffoldKey,
         _builder = builder;
 
@@ -25,86 +26,90 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
   _BaseViewState<T> createState() => _BaseViewState<T>();
 }
 
-class _BaseViewState<T extends BaseModel> extends State<BaseView<T>> with SingleTickerProviderStateMixin {
+class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
+    with TickerProviderStateMixin {
   T _model = locator<T>();
   ScopedModelDescendantBuilder<T> otherBuilder;
 
   @override
   void initState() {
-    otherBuilder = (context, child, BaseModel model) =>
-        Scaffold(
+    otherBuilder = (context, child, BaseModel model) => Scaffold(
           resizeToAvoidBottomInset: true,
           key: widget._scaffoldKey,
           floatingActionButton: widget.fab(context, model),
-          body: Row(
-            children: [
-              Container(
-                child: Card(
-                  elevation: 5,
-                  shape: ContinuousRectangleBorder(),
-                  margin: EdgeInsets.all(0),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: SizedBox(
-                          width: 36,
-                          height: 36,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(
-                                    'https://lh3.googleusercontent.com/-3hnUnOvs4Pg/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rc4nDtmlwLdIFlLDoVo1oiZGWyhnQ.CMID/photo.jpg'),
+          body: BottomStatus(
+            model: model,
+            child: Row(
+              children: [
+                Container(
+                  child: Card(
+                    elevation: 5,
+                    shape: ContinuousRectangleBorder(),
+                    margin: EdgeInsets.all(0),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: NetworkImage(
+                                      'https://lh3.googleusercontent.com/-3hnUnOvs4Pg/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rc4nDtmlwLdIFlLDoVo1oiZGWyhnQ.CMID/photo.jpg'),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      getLeftButton(
-                          icon: Icons.view_module,
-                          label: 'File list',
-                          onPressed: () {
-                            print('Pressed list');
-                          }),
-                      getLeftButton(
-                          icon: Icons.developer_board,
-                          label: 'Console',
-                          onPressed: () {
-                            print('Pressed console');
-                          }),
-                      getLeftButton(
-                          icon: Icons.schedule,
-                          label: 'Schedule',
-                          onPressed: () {
-                            print('Pressed schedule');
-                          }),
-                      getLeftButton(
-                          icon: Icons.insert_drive_file,
-                          label: 'Logs',
-                          onPressed: () {
-                            print('Pressed logs');
-                          }),
-                      Spacer(),
-                      getLeftButton(
-                          icon: Icons.settings,
-                          label: 'Settings',
-                          onPressed: () {
-                            print('Pressed settings');
-                          }),
-                    ],
+                        getLeftButton(
+                            icon: Icons.view_module,
+                            label: 'File list',
+                            onPressed: () {
+                              print('Pressed list');
+                            }),
+                        getLeftButton(
+                            icon: Icons.developer_board,
+                            label: 'Console',
+                            onPressed: () {
+                              print('Pressed console');
+                            }),
+                        getLeftButton(
+                            icon: Icons.schedule,
+                            label: 'Schedule',
+                            onPressed: () {
+                              print('Pressed schedule');
+                            }),
+                        getLeftButton(
+                            icon: Icons.insert_drive_file,
+                            label: 'Logs',
+                            onPressed: () {
+                              print('Pressed logs');
+                            }),
+                        Spacer(),
+                        getLeftButton(
+                            icon: Icons.settings,
+                            label: 'Settings',
+                            onPressed: () {
+                              print('Pressed settings');
+                            }),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Builder(
-                builder: (context) => widget._builder(context, child, model),
-              ),
-            ],
+                Builder(
+                  builder: (context) => widget._builder(context, child, model),
+                ),
+              ],
+            ),
           ),
         );
 
     if (widget.onModelReady != null) {
+      _model.init(this);
       widget.onModelReady(_model);
     }
 

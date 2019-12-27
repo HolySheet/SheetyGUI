@@ -7,7 +7,7 @@ import 'package:sheety_gui/services/payload/list_response.dart';
 class FileIcon extends StatefulWidget {
   final bool selected;
   final ListItem listItem;
-  final Function(ListItem) onTap;
+  final Function(BuildContext, ListItem) onTap;
 
   FileIcon({Key key, this.selected, this.listItem, this.onTap}) : super(key: key);
 
@@ -17,7 +17,7 @@ class FileIcon extends StatefulWidget {
 
 class FileIconState extends State<FileIcon> {
   final ListItem listItem;
-  final Function(ListItem) onTap;
+  final Function(BuildContext, ListItem) onTap;
 
   FileIconState(this.listItem, this.onTap);
 
@@ -30,7 +30,7 @@ class FileIconState extends State<FileIcon> {
             width: 125,
             height: 125,
             child: GestureDetector(
-              onTap: () => onTap?.call(listItem),
+              onTap: () => onTap?.call(context, listItem),
               onSecondaryTapDown: (tdd) => print('Secondary'),
               child: Stack(
                 children: [
