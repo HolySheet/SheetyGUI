@@ -28,44 +28,6 @@ class JavaConnectorService {
         payload: ListRequest('Query'),
         response: (response) => completer.complete(response));
 
-    // TODO: Remove, this was for a test
-
-    sendRequest(
-      payload: CodeExecutionRequest("""
-      CompletableFuture.runAsync(() -> {
-          try {
-              Thread.sleep(5000);
-          } catch (InterruptedException ignored) {}
-          long theTime = System.currentTimeMillis();
-          long theTimeHalved = System.currentTimeMillis() / 2;
-          // callback 030ccb35-8e0b-4c13-a0a1-9a6347ad8849 theTime theTimeHalved
-      });
-      """),
-      response: (CodeExecutionResponse response) {
-        // Called immediately after invocation
-        // Prints out all variables used in the current and past JShells
-        print('Response returned: ${response.snippetResult}');
-        print('All variables:');
-          response.variables.forEach((variable) {
-          print('${variable.name} = ${variable.object}');
-        });
-        print('----------');
-        },
-      callback: {
-        // Create callback for given UUID
-        '030ccb35-8e0b-4c13-a0a1-9a6347ad8849': (callback) {
-            // Called after 5 seconds where the `// callback` is
-            // Prints out the callback variables and values, `theTime` and `theTimeHalved`
-            print('Callback variables: ${callback.snippetResult}');
-            callback.variables.forEach((variable) {
-              print('${variable.name} = ${variable.object}');
-            });
-            print('----------');
-          }
-      }
-    );
-
-
     return completer.future;
   }
 
@@ -90,19 +52,14 @@ class JavaConnectorService {
         },
         PayloadType.LIST_RESPONSE: () {
           var response = ListResponse.fromJson(json);
-          print('Got list response!');
-
           waiting[uuid]?.response(response);
         },
         PayloadType.CODE_EXECUTION_RESPONSE: () {
           var response = CodeExecutionResponse.fromJson(json);
-          print('Got a code execution response!');
-
           waiting[uuid]?.response(response);
         },
         PayloadType.CODE_EXECUTION_CALLBACK_RESPONSE: () {
           var response = CodeExecutionCallbackResponse.fromJson(json);
-          print('Got a code execution callback response!');
 
           var codeExecutionRequest = waiting[uuid] as CallbackRequest;
           codeExecutionRequest?.callback[response.callbackState]

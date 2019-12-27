@@ -8,14 +8,17 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
+import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/utility.dart';
 
 class ListModel extends BaseModel {
-  static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011, keyLabel: r'ctrl', debugName: 'Key Control');
+  static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011,
+      keyLabel: r'ctrl', debugName: 'Key Control');
 
   final _conn = locator<JavaConnectorService>();
+  final _selection = locator<FileSelectionService>();
   final fabKey = GlobalKey();
 
   List<ListItem> listItems = [];
@@ -94,8 +97,12 @@ class ListModel extends BaseModel {
     }
   }
 
-  ListItem getCombined() =>
-    ListItem('${selected.length} Selected', selected.sumMap((item) => item.size), selected.sumMap((item) => item.sheets), selected[0].date, selected.map((item) => item.id).join(', '));
+  ListItem getCombined() => ListItem(
+      '${selected.length} Selected',
+      selected.sumMap((item) => item.size),
+      selected.sumMap((item) => item.sheets),
+      selected[0].date,
+      selected.map((item) => item.id).join(', '));
 
   String formatDate(int date) {
     var dateTime = DateTime.fromMillisecondsSinceEpoch(date);
@@ -139,10 +146,10 @@ class ListModel extends BaseModel {
     var percentage = (lastX - startX) / 250;
     var velocity = end.primaryVelocity; // Pixels per second
     if (percentage >= 0.1 || velocity >= 200) {
-        sidebarAnimationController.forward(from: lastX - startX).whenComplete(() {
-          showSidebar = false;
-          notifyListeners();
-        });
+      sidebarAnimationController.forward(from: lastX - startX).whenComplete(() {
+        showSidebar = false;
+        notifyListeners();
+      });
     }
   }
 
@@ -151,10 +158,16 @@ class ListModel extends BaseModel {
   void showNewPopup(BuildContext context) {
     newButtonAngleAnimationController.forward();
 
-    Navigator.of(context).push(CustomDialog(fabKey.globalPaintBounds.center, () => newButtonAngleAnimationController.reverse(), () {
+    Navigator.of(context).push(CustomDialog(fabKey.globalPaintBounds.center,
+        () => newButtonAngleAnimationController.reverse(), () {
       print('Insert');
     }, () {
-      print('Upload');
+      Navigator.of(context).pop();
+      _selection.sendRequest(
+          selected: (files) {
+            print('Selected file: ${files.first}');
+          },
+          cancelled: () => print('Cancelled file open'));
     }));
   }
 }
@@ -180,38 +193,46 @@ class CustomDialog extends PopupRoute {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) => Stack(children: [
-    AnimatedBuilder(
-      animation: animation,
-      builder: (c, child) => Transform.translate(
-        offset: Offset(buttonPosition.dx - (58 / 2), buttonPosition.dy - lerpDouble(100, height + 50, animation.value)),
-        child: Transform.scale(
-          scale: animation.value,
-          child: child,
-        ),
-      ),
-      child: Card(
-        elevation: 10,
-        shape: RoundedRectangleBorder(side: BorderSide.none, borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          width: 50,
-          height: height,
-          child: Column(
-            children: [
-              IconButton(
-                icon: Icon(Icons.insert_drive_file, semanticLabel: 'Insert'), // Idk what this should do
-                onPressed: insert,
-              ),
-              IconButton(
-                icon: Icon(Icons.file_upload, semanticLabel: 'Upload'), // Upload a given file
-                onPressed: upload,
-              ),
-            ],
+          Animation<double> secondaryAnimation) =>
+      Stack(children: [
+        AnimatedBuilder(
+          animation: animation,
+          builder: (c, child) => Transform.translate(
+            offset: Offset(
+                buttonPosition.dx - (58 / 2),
+                buttonPosition.dy -
+                    lerpDouble(100, height + 50, animation.value)),
+            child: Transform.scale(
+              scale: animation.value,
+              child: child,
+            ),
           ),
-        ),
-      ),
-    )
-  ]);
+          child: Card(
+            elevation: 10,
+            shape: RoundedRectangleBorder(
+                side: BorderSide.none, borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              width: 50,
+              height: height,
+              child: Column(
+                children: [
+                  IconButton(
+                    icon:
+                        Icon(Icons.insert_drive_file, semanticLabel: 'Insert'),
+                    // Idk what this should do
+                    onPressed: insert,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.file_upload, semanticLabel: 'Upload'),
+                    // Upload a given file
+                    onPressed: upload,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        )
+      ]);
 
   @override
   void didComplete(dynamic result) {
