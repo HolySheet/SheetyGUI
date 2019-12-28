@@ -15,6 +15,7 @@ class FileSelectionService {
       {@required Function(List<File>) selected,
       Function() cancelled,
       bool multi = false,
+      String title = 'File chooser',
       SelectionMode mode = SelectionMode.open,
       String initialDirectory = ''}) {
     if (initialDirectory.isNotEmpty) {
@@ -32,6 +33,7 @@ class FileSelectionService {
       
           var chooser = new JFileChooser($initialDirectory);
           chooser.setMultiSelectionEnabled($multi);
+          chooser.setDialogTitle("$title");
           var result = chooser.${mode.method}(null);
           if (result == 0) {
               var selected = Stream.of(chooser.getSelectedFiles(), new File[]{chooser.getSelectedFile()})

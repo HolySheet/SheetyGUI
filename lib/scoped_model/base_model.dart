@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +48,14 @@ class BaseModel extends Model {
 
   void updateText(String text) {
     loadingText = text;
+
+    if (_loading) {
+      notifyListeners();
+    }
+  }
+
+  void updatePercent(double percent) {
+    loadingPercent = percent.clamp(0, 1);
 
     if (_loading) {
       notifyListeners();

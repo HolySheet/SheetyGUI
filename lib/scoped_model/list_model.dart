@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
@@ -8,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
+import 'package:sheety_gui/services/drive_io_service.dart';
 import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
@@ -19,6 +21,7 @@ class ListModel extends BaseModel {
 
   final _conn = locator<JavaConnectorService>();
   final _selection = locator<FileSelectionService>();
+  final _driveIO = locator<DriveIOService>();
   final fabKey = GlobalKey();
   final focusNode = FocusNode();
 
@@ -41,10 +44,7 @@ class ListModel extends BaseModel {
   double lastX = 0;
 
   void refreshFiles() {
-    _conn
-        .send()
-        .then((response) => listItems = response.items)
-        .whenComplete(notifyListeners);
+    _driveIO.listFiles().whenComplete(() => notifyListeners());
   }
 
   void onKey(RawKeyEvent event) {
@@ -116,6 +116,7 @@ class ListModel extends BaseModel {
 
   void init(TickerProvider tickProvider) {
     super.init(tickProvider);
+
     sidebarAnimationController = AnimationController(
         lowerBound: 0,
         upperBound: 250,
@@ -171,7 +172,23 @@ class ListModel extends BaseModel {
       _selection.sendRequest(
           multi: true,
           selected: (files) {
-            print('Selected files: $files');
+            if (files.isEmpty) {
+              return;
+            }
+
+            print('Uploading: $files');
+
+            showLoading();
+
+            _driveIO.uploadFiles(
+              files.map((file) => file.path).toList(),
+              startUpload: (file) {
+                var name = File(file).uri.pathSegments.last;
+                updateText('Uploading $name');
+              },
+              statusCallback: (index, progress, response) {
+                updatePercent(progress);
+              });
           },
           cancelled: () => print('Cancelled file open'));
     }));

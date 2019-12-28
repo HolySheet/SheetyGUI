@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload/serialized_variable.dart';
 import 'package:sheety_gui/services/payload_type.dart';

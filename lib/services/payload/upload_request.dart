@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
@@ -10,12 +9,16 @@ class UploadRequest extends BasicPayload {
 
   UploadRequest(this.file, this.upload, this.compression,
       [String message = 'Success'])
-      : super(1, PayloadType.UPLOAD_REQUEST, message);
+      : assert(upload == 'multipart' || upload == 'direct'),
+        assert(compression == 'none' || upload == 'zip'),
+        super(1, PayloadType.UPLOAD_REQUEST, message);
 
   UploadRequest.fromJson(Map<String, dynamic> json)
       : file = json['file'],
         upload = json['upload'],
         compression = json['compression'],
+        assert(upload == 'multipart' || upload == 'direct'),
+        assert(compression == 'none' || upload == 'zip'),
         super.fromJson(json, type: PayloadType.UPLOAD_REQUEST);
 
   Map<String, dynamic> toJson() => super.toJson()

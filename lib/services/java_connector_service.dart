@@ -6,9 +6,15 @@ import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload/code_execution_callback_response.dart';
 import 'package:sheety_gui/services/payload/code_execution_request.dart';
 import 'package:sheety_gui/services/payload/code_execution_response.dart';
+import 'package:sheety_gui/services/payload/download_request.dart';
+import 'package:sheety_gui/services/payload/download_status_response.dart';
 import 'package:sheety_gui/services/payload/error_payload.dart';
 import 'package:sheety_gui/services/payload/list_request.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
+import 'package:sheety_gui/services/payload/remove_request.dart';
+import 'package:sheety_gui/services/payload/remove_status_response.dart';
+import 'package:sheety_gui/services/payload/upload_request.dart';
+import 'package:sheety_gui/services/payload/upload_status_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 import 'package:uuid/uuid.dart';
 
@@ -20,16 +26,6 @@ class JavaConnectorService {
   Socket _socket;
 
   Map<String, Request> waiting = {};
-
-  Future<ListResponse> send() async {
-    var completer = Completer<ListResponse>();
-
-    sendRequest(
-        payload: ListRequest('Query'),
-        response: (response) => completer.complete(response));
-
-    return completer.future;
-  }
 
   Future<void> connect() async {
     print('Connecting...');
@@ -45,24 +41,28 @@ class JavaConnectorService {
 
       var uuid = basicPayload.state;
 
+      var request = waiting[uuid];
+
+      if (request == null) {
+        return;
+      }
+
       ({
-        PayloadType.ERROR: () {
-          var error = ErrorPayload.fromJson(json);
-          waiting[uuid]?.error(error);
-        },
-        PayloadType.LIST_RESPONSE: () {
-          var response = ListResponse.fromJson(json);
-          waiting[uuid]?.response(response);
-        },
-        PayloadType.CODE_EXECUTION_RESPONSE: () {
-          var response = CodeExecutionResponse.fromJson(json);
-          waiting[uuid]?.response(response);
-        },
+        PayloadType.ERROR: () =>
+            request.error(ErrorPayload.fromJson(json)),
+        PayloadType.LIST_RESPONSE: () =>
+            request.response(ListResponse.fromJson(json)),
+        PayloadType.UPLOAD_STATUS_RESPONSE: () =>
+            StatusableRequest.callResponse(request, UploadStatusResponse.fromJson(json)),
+        PayloadType.DOWNLOAD_STATUS_RESPONSE: () =>
+            StatusableRequest.callResponse(request, DownloadStatusResponse.fromJson(json)),
+        PayloadType.REMOVE_STATUS_RESPONSE: () =>
+            StatusableRequest.callResponse(request, RemoveStatusResponse.fromJson(json)),
+        PayloadType.CODE_EXECUTION_RESPONSE: () =>
+            request.response(CodeExecutionResponse.fromJson(json)),
         PayloadType.CODE_EXECUTION_CALLBACK_RESPONSE: () {
           var response = CodeExecutionCallbackResponse.fromJson(json);
-
-          var codeExecutionRequest = waiting[uuid] as CallbackRequest;
-          codeExecutionRequest?.callback[response.callbackState]
+          CallbackRequest.from(request)?.callback[response.callbackState]
               ?.call(response);
         },
       }[basicPayload.type])();
@@ -80,23 +80,49 @@ class JavaConnectorService {
     });
   }
 
-  void sendRequest<T>(
+  /// Sends a [payload] request to the connected socket. The immediate response
+  /// paired with the given request type will be piped to [response]. For the
+  /// [CodeExecutionRequest], callbacks are available via [callback] with the
+  /// maps' key being the UUID of the callback. [error] is where errors are
+  /// piped to, and they are automatically logged (regardless of this function
+  /// being present) if [logError] is true. The [statusResponse] function is
+  /// invoked when a request's status response is invoked, meaning it could be
+  /// invoked an arbitrary amount of times. This property is only available for
+  /// request types that have [PayloadType.hasStatusResponse] true.
+  void sendRequest<T extends BasicPayload>(
       {BasicPayload payload,
-        Function(T) response,
+      Function(T) response,
+      Function(T) statusResponse,
       Map<String, Function(CodeExecutionCallbackResponse)> callback,
-      Function(ErrorPayload) error}) {
+      Function(ErrorPayload) error,
+      bool logError = true}) {
     assert(callback == null || payload is CodeExecutionRequest,
         'A callback can only be defined if a CodeExecutionRequest is being sent');
+    assert(statusResponse == null || payload.type.hasStatusResponse,
+        'statusResponse is only available for payload types that allow for them');
     var uuid = _uuid.v4();
     payload.state = uuid;
     write(jsonEncode(payload.toJson()));
 
-    error ??= (error) {
-      print(
-          'Error received while sending request: ${error.message}\n${error.stacktrace}');
-    };
+    if (logError) {
+      if (error == null) {
+        error = (e) => print(
+            'Error received while sending request: ${e.message}\n${e.stacktrace}');
+      } else {
+        error = (e) {
+          print(
+              'Error received while sending request: ${e.message}\n${e.stacktrace}');
+          error(e);
+        };
+      }
+    }
 
-    if (callback != null) {
+    if (statusResponse != null) {
+      waiting[uuid] = StatusableRequest(
+          response: (t) => response(t),
+          statusResponse: statusResponse,
+          error: error);
+    } else if (callback != null) {
       waiting[uuid] = CallbackRequest(
           response: (t) => response(t), callback: callback, error: error);
     } else {
@@ -129,8 +155,39 @@ class CallbackRequest<T> extends Request {
   Map<String, Function(CodeExecutionCallbackResponse)> callback;
 
   CallbackRequest(
+      {Function(dynamic) response, this.callback, Function(ErrorPayload) error})
+      : super(response, error);
+
+  static CallbackRequest from(BasicRequest request) {
+    if (request is CallbackRequest) {
+      return request as CallbackRequest;
+    }
+
+    return null;
+  }
+}
+
+/// A request that has status updates associated with them. These status
+/// responses do not use the normal [response] function, as in the future
+/// status and normal responses may be different, to allow for a easier
+/// expandable protocol in the future.
+class StatusableRequest<T> extends Request {
+  void Function(T) statusResponse;
+
+  StatusableRequest(
       {Function(dynamic) response,
-      this.callback,
+      this.statusResponse,
       Function(ErrorPayload) error})
       : super(response, error);
+
+  static StatusableRequest from(BasicRequest request) {
+    if (request is StatusableRequest) {
+      return request as StatusableRequest;
+    }
+
+    return null;
+  }
+
+  static callResponse(BasicRequest request, dynamic response) =>
+      from(request)?.statusResponse?.call(response);
 }
