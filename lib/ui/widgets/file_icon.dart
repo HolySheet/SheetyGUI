@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
+import 'package:sheety_gui/services/payload/list_item.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
 
 class FileIcon extends StatefulWidget {

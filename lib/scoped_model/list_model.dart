@@ -12,6 +12,7 @@ import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/drive_io_service.dart';
 import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
+import 'package:sheety_gui/services/payload/list_item.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/ui/widgets/file_icon.dart';
 import 'package:sheety_gui/utility.dart';
@@ -20,7 +21,6 @@ class ListModel extends BaseModel {
   static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011,
       keyLabel: r'ctrl', debugName: 'Key Control');
 
-  final _conn = locator<JavaConnectorService>();
   final _selection = locator<FileSelectionService>();
   final _driveIO = locator<DriveIOService>();
   final fabKey = GlobalKey();
@@ -190,6 +190,11 @@ class ListModel extends BaseModel {
               updateText('Uploading $name');
             }, statusCallback: (index, progress, response) {
               updatePercent(progress);
+
+              if (response.status == 'COMPLETE') {
+                print('Complete, adding ${response.items.length} file(s)');
+                listItems.addAll(response.items);
+              }
             });
           },
           cancelled: () => print('Cancelled file open'));
