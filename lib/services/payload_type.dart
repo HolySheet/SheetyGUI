@@ -7,7 +7,7 @@ class PayloadType {
   static const PayloadType DOWNLOAD_REQUEST = PayloadType(5, false, true);
   static const PayloadType DOWNLOAD_STATUS_RESPONSE = PayloadType(6, true);
   static const PayloadType REMOVE_REQUEST = PayloadType(7, false, true);
-  static const PayloadType REMOVE_STATUS_RESPONSE = PayloadType(8, false);
+  static const PayloadType REMOVE_STATUS_RESPONSE = PayloadType(8, true);
   static const PayloadType CODE_EXECUTION_REQUEST = PayloadType(9, false);
   static const PayloadType CODE_EXECUTION_RESPONSE = PayloadType(10, true);
   static const PayloadType CODE_EXECUTION_CALLBACK_RESPONSE = PayloadType(11, true);

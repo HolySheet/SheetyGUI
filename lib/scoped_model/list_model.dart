@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:filesize/filesize.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,7 +32,10 @@ class ListModel extends BaseModel {
   List<ListItem> listItems = [];
   List<ListItem> selected = [];
   ListItem showingSelected; // Filled with dummy values when multiple selected
-  bool multiSelect = false;
+  int _lastMulti = 0;
+
+  bool get multiSelect =>
+      DateTime.now().millisecondsSinceEpoch - _lastMulti <= 100;
 
   // ANIMATION
 
@@ -54,7 +58,9 @@ class ListModel extends BaseModel {
   }
 
   void onKey(RawKeyEvent event) {
-    multiSelect = event.data.logicalKey == keyControl;
+    if (event.data.logicalKey == keyControl) {
+      _lastMulti = DateTime.now().millisecondsSinceEpoch;
+    }
   }
 
   void tapFile(BuildContext context, ListItem item) {
@@ -65,22 +71,14 @@ class ListModel extends BaseModel {
 
       if (multiSelect) {
         if (selected.isEmpty) {
-          sidebarAnimationController.forward().whenComplete(() {
-            showSidebar = false;
-            showingSelected = null;
-            notifyListeners();
-          });
+          startCollapse();
         } else {
           updateSelected();
           notifyListeners();
         }
       } else {
         selected = [];
-        sidebarAnimationController.forward().whenComplete(() {
-          showSidebar = false;
-          showingSelected = null;
-          notifyListeners();
-        });
+        startCollapse();
       }
     } else {
       showSidebar = true;
@@ -163,7 +161,15 @@ class ListModel extends BaseModel {
     }
   }
 
+  /// Shows the sidebar
   TickerFuture resetCollapse() => sidebarAnimationController.reverse();
+
+  /// Collapses the sidebar
+  void startCollapse() => sidebarAnimationController.forward().whenComplete(() {
+        showSidebar = false;
+        showingSelected = null;
+        notifyListeners();
+      });
 
   void showNewPopup(BuildContext context) {
     newButtonAngleAnimationController.forward();
@@ -189,21 +195,87 @@ class ListModel extends BaseModel {
 
             _driveIO.uploadFiles(files.map((file) => file.path).toList(),
                 startUpload: (file) {
-              var name = File(file).uri.pathSegments.last;
-              updateText('Uploading $name');
-            }, statusCallback: (index, progress, response) {
-              updatePercent(progress);
+                  var name = File(file).uri.pathSegments.last;
+                  updateText('Uploading $name');
+                },
+                statusCallback: (index, progress, response) {
+                  updatePercent(progress);
 
-              if (response.status == 'COMPLETE') {
-                print('Complete, adding ${response.items.length} file(s)');
-                listItems.addAll(response.items);
-
-                Timer(Duration(milliseconds: BottomStatus.ANIMATION_DURATION), () => hideLoading());
-              }
-            });
+                  if (response.status == 'COMPLETE') {
+                    print(
+                        'Request complete, adding ${response.items.length} file(s)');
+                    listItems.addAll(response.items);
+                  }
+                },
+                completeUpload: () => Timer(
+                    Duration(milliseconds: BottomStatus.ANIMATION_DURATION),
+                    () => hideLoading()));
           },
           cancelled: () => print('Cancelled file open'));
     }));
+  }
+
+  void pressDownload(BuildContext context) {
+    if (selected.isEmpty) {
+      return;
+    }
+
+    var combined = getCombined();
+    var downloadText =
+        selected.length == 1 ? 'this file' : 'these ${selected.length} files';
+    confirmDialog(
+      context,
+      onAccept: () {
+        print('Downloading ${selected.length} files...');
+      },
+      title: 'Confirm Download',
+      body:
+          'Are you sure you want to download $downloadText? This will take up ${filesize(combined.size)}.',
+      acceptText: 'Download',
+    );
+  }
+
+  void pressRemove(BuildContext context) {
+    if (selected.isEmpty) {
+      return;
+    }
+
+    var combined = getCombined();
+    var downloadText =
+        selected.length == 1 ? 'this file' : 'these ${selected.length} files';
+    confirmDialog(
+      context,
+      onAccept: () {
+        print('Removing: $selected');
+
+        showLoading();
+
+        var idNameMap = Map<String, ListItem>.fromIterable(selected,
+            key: (item) => item.id, value: (item) => item);
+
+        _driveIO.removeFiles(idNameMap.keys.toList(), startRemove: (id) {
+          updateText('Removing ${idNameMap[id].name}');
+        }, statusCallback: (index, progress, response) {
+          updatePercent(progress);
+
+          if (response.status == 'COMPLETE') {
+            print('Request complete, removed ${selected[index].name}');
+            listItems.remove(selected[index]);
+            selected.remove(selected[index]);
+            notifyListeners();
+          }
+        }, completeRemove: () {
+          startCollapse();
+          Timer(Duration(milliseconds: BottomStatus.ANIMATION_DURATION),
+              () => hideLoading());
+        });
+      },
+      title: 'Confirm Remove',
+      body:
+          'Are you sure you want to remove $downloadText? This will remove ${filesize(combined.size)} across ${combined.sheets} sheet${combined.sheets != 1 ? 's' : ''}.',
+      acceptText: 'Remove',
+      acceptColor: Colors.red,
+    );
   }
 }
 

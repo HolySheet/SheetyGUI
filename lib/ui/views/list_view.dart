@@ -12,8 +12,8 @@ class FileListView extends StatefulWidget {
   State<StatefulWidget> createState() => FileListViewState();
 }
 
-class FileListViewState extends State<FileListView> with TickerProviderStateMixin {
-
+class FileListViewState extends State<FileListView>
+    with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
 //    FocusScope.of(context).requestFocus(focusNode);
@@ -28,7 +28,8 @@ class FileListViewState extends State<FileListView> with TickerProviderStateMixi
         child: AnimatedBuilder(
           animation: model.newButtonAngleAnimation,
           builder: (c, widget) => Transform.rotate(
-            angle: Angle.fromDegrees(model.newButtonAngleAnimation.value).radians,
+            angle:
+                Angle.fromDegrees(model.newButtonAngleAnimation.value).radians,
             child: widget,
           ),
           child: Icon(Icons.add),
@@ -86,10 +87,14 @@ class FileListViewState extends State<FileListView> with TickerProviderStateMixi
                               child: Text(model.showingSelected.name ?? '',
                                   style: fileTitleDisplay),
                             ),
-                            lineText(filesize(model.showingSelected.size ?? 0), topPadding: 20),
-                            lineText('${model.showingSelected.sheets ?? ''} Sheet${model.showingSelected.sheets != 1 ? 's' : ''}'),
-                            lineText('Last Modified: ${model.formatDate(model.showingSelected.date ?? 0)}'),
-                            lineText('Ownership', style: Theme.of(context).textTheme.body2),
+                            lineText(filesize(model.showingSelected.size ?? 0),
+                                topPadding: 20),
+                            lineText(
+                                '${model.showingSelected.sheets ?? ''} Sheet${model.showingSelected.sheets != 1 ? 's' : ''}'),
+                            lineText(
+                                'Last Modified: ${model.formatDate(model.showingSelected.date ?? 0)}'),
+                            lineText('Ownership',
+                                style: Theme.of(context).textTheme.body2),
                             Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: SizedBox(
@@ -107,7 +112,17 @@ class FileListViewState extends State<FileListView> with TickerProviderStateMixi
                                 ),
                               ),
                             ),
-                            lineText('Owned by Adam Yarris')
+                            lineText('Owned by Adam Yarris'),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 15),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  sidebarButton('Download', onPressed: () => model.pressDownload(context), color: Colors.blue, padding: EdgeInsets.only(right: 10)),
+                                  sidebarButton('Remove', onPressed: () => model.pressRemove(context), color: Colors.red, padding: EdgeInsets.only(left: 10)),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -121,7 +136,23 @@ class FileListViewState extends State<FileListView> with TickerProviderStateMixi
     );
   }
 
-  Widget lineText(String text, {TextStyle style, double topPadding = 10}) => Padding(
+  Widget sidebarButton(String text,
+          {@required Function() onPressed,
+          Color color,
+          Color textColor = Colors.white,
+          EdgeInsets padding = EdgeInsets.zero}) =>
+      Padding(
+        padding: padding,
+        child: MaterialButton(
+          color: color,
+          textColor: textColor,
+          child: Text(text),
+          onPressed: onPressed,
+        ),
+      );
+
+  Widget lineText(String text, {TextStyle style, double topPadding = 10}) =>
+      Padding(
         padding: EdgeInsets.only(top: topPadding),
         child: SizedBox(
           width: double.infinity,

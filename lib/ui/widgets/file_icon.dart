@@ -23,17 +23,17 @@ class FileIconState extends State<FileIcon> {
   FileIconState(this.listItem, this.onTap);
 
   @override
-  Widget build(BuildContext context) => Card(
-    elevation: widget.selected ? 10 : 5,
-        shape: RoundedRectangleBorder(side: widget.selected ? BorderSide(color: Colors.blue) : BorderSide.none, borderRadius: BorderRadius.circular(4)),
-        margin: EdgeInsets.all(10),
-        child: SizedBox(
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: () => onTap?.call(context, listItem),
+    onSecondaryTapDown: (tdd) => print('Secondary'),
+    child: Card(
+      elevation: widget.selected ? 10 : 5,
+      shape: RoundedRectangleBorder(side: widget.selected ? BorderSide(color: Colors.blue) : BorderSide.none, borderRadius: BorderRadius.circular(4)),
+      margin: EdgeInsets.all(10),
+      child: SizedBox(
             width: 125,
             height: 125,
-            child: GestureDetector(
-              onTap: () => onTap?.call(context, listItem),
-              onSecondaryTapDown: (tdd) => print('Secondary'),
-              child: Stack(
+            child: Stack(
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(25, 15, 25, 0),
@@ -52,7 +52,7 @@ class FileIconState extends State<FileIcon> {
                   ),
                 ],
               ),
-            ),
-        ),
-      );
+          ),
+    ),
+  );
 }

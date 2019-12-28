@@ -30,7 +30,7 @@ class BaseModel extends Model {
         Tween<double>(begin: 0, end: 1).animate(bottomAnimationController);
   }
 
-  TickerFuture showLoading() {
+  Future<void> showLoading() {
     if (_loading) {
       return null;
     }
@@ -38,12 +38,13 @@ class BaseModel extends Model {
     return bottomAnimationController.forward();
   }
 
-  TickerFuture hideLoading() {
+  Future<void> hideLoading() {
     if (!_loading) {
       return null;
     }
     _loading = false;
-    return bottomAnimationController.reverse();
+    return bottomAnimationController.reverse()
+        .then((_) => loadingPercent = 0);
   }
 
   void updateText(String text) {
@@ -62,6 +63,44 @@ class BaseModel extends Model {
     }
   }
 
+  void confirmDialog(BuildContext context,
+      {@required Function() onAccept,
+      Function() onCancel,
+      String title,
+      String body,
+      String cancelText = 'Cancel',
+      String acceptText,
+      Color acceptColor = Colors.blue}) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button for close dialog!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(body),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.black,
+              child: Text(cancelText),
+              onPressed: () {
+                Navigator.of(context).pop();
+                onCancel?.call();
+              },
+            ),
+            RaisedButton(
+              color: acceptColor,
+              child: Text(acceptText),
+              onPressed: () {
+                Navigator.of(context).pop();
+                onAccept();
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
   void dummyAnimation() {
     print('Dummy animation');
 
@@ -70,7 +109,6 @@ class BaseModel extends Model {
 
     Timer.periodic(Duration(milliseconds: 500), (t) {
       if ((loadingPercent += 0.1) > 1) {
-        loadingPercent = 0;
         hideLoading();
         t.cancel();
         return;
@@ -80,3 +118,5 @@ class BaseModel extends Model {
     });
   }
 }
+
+enum ConfirmAction { CANCEL, ACCEPT }
