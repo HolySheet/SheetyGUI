@@ -5,21 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 
-class BottomStatus extends StatefulWidget {
+class BottomStatus extends StatelessWidget {
   final Widget child;
   final BaseModel model;
 
-  const BottomStatus({Key key, this.child, this.model}) : super(key: key);
-
-  @override
-  State<BottomStatus> createState() => BottomStatusState(child, model);
-}
-
-class BottomStatusState extends State<BottomStatus> {
-  final Widget child;
-  final BaseModel model;
-
-  BottomStatusState(this.child, this.model);
+  BottomStatus({this.child, this.model});
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +22,12 @@ class BottomStatusState extends State<BottomStatus> {
             child: Container(
               width: screenSize.width,
               height: screenSize.height,
-              color: Colors.transparent, //.withAlpha(127),
+              color: Colors.transparent,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   AnimatedBuilder(
-                    animation: model.bottomAnimation,
+                    animation: model.bottomAnimationController,
                     builder: (context, child) => Transform.translate(
                       offset: Offset(0, 50 - model.bottomAnimation.value),
                       child: child,
@@ -79,7 +69,6 @@ class BottomStatusState extends State<BottomStatus> {
                     ),
                   ),
                 ],
-//                ),
               ),
             ),
           ),

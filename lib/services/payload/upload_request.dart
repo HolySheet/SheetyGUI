@@ -9,16 +9,12 @@ class UploadRequest extends BasicPayload {
 
   UploadRequest(this.file, this.upload, this.compression,
       [String message = 'Success'])
-      : assert(upload == 'multipart' || upload == 'direct'),
-        assert(compression == 'none' || upload == 'zip'),
-        super(1, PayloadType.UPLOAD_REQUEST, message);
+      : super(1, PayloadType.UPLOAD_REQUEST, message);
 
   UploadRequest.fromJson(Map<String, dynamic> json)
       : file = json['file'],
         upload = json['upload'],
         compression = json['compression'],
-        assert(upload == 'multipart' || upload == 'direct'),
-        assert(compression == 'none' || upload == 'zip'),
         super.fromJson(json, type: PayloadType.UPLOAD_REQUEST);
 
   Map<String, dynamic> toJson() => super.toJson()

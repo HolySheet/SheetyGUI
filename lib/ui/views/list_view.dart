@@ -12,11 +12,11 @@ class FileListView extends StatefulWidget {
   State<StatefulWidget> createState() => FileListViewState();
 }
 
-class FileListViewState extends State<FileListView>
-    with TickerProviderStateMixin {
+class FileListViewState extends State<FileListView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+//    FocusScope.of(context).requestFocus(focusNode);
     final fileTitleDisplay =
         Theme.of(context).textTheme.display1.copyWith(fontSize: 24);
     return BaseView<ListModel>(
@@ -65,9 +65,9 @@ class FileListViewState extends State<FileListView>
                 onHorizontalDragUpdate: model.sideDragUpdate,
                 onHorizontalDragEnd: model.sideDragEnd,
                 child: AnimatedBuilder(
-                  animation: model.bottomAnimationController,
+                  animation: model.sidebarAnimationController,
                   builder: (c, widget) => Transform.translate(
-                    offset: Offset(model.bottomAnimation.value, 0),
+                    offset: Offset(model.sidebarWidthAnimation.value, 0),
                     child: widget,
                   ),
                   child: SizedBox(

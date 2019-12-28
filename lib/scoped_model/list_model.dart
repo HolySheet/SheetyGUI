@@ -13,6 +13,7 @@ import 'package:sheety_gui/services/drive_io_service.dart';
 import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
+import 'package:sheety_gui/ui/widgets/file_icon.dart';
 import 'package:sheety_gui/utility.dart';
 
 class ListModel extends BaseModel {
@@ -44,7 +45,10 @@ class ListModel extends BaseModel {
   double lastX = 0;
 
   void refreshFiles() {
-    _driveIO.listFiles().whenComplete(() => notifyListeners());
+    _driveIO.listFiles().then((list) {
+      listItems = list;
+      notifyListeners();
+    });
   }
 
   void onKey(RawKeyEvent event) {
@@ -180,15 +184,13 @@ class ListModel extends BaseModel {
 
             showLoading();
 
-            _driveIO.uploadFiles(
-              files.map((file) => file.path).toList(),
-              startUpload: (file) {
-                var name = File(file).uri.pathSegments.last;
-                updateText('Uploading $name');
-              },
-              statusCallback: (index, progress, response) {
-                updatePercent(progress);
-              });
+            _driveIO.uploadFiles(files.map((file) => file.path).toList(),
+                startUpload: (file) {
+              var name = File(file).uri.pathSegments.last;
+              updateText('Uploading $name');
+            }, statusCallback: (index, progress, response) {
+              updatePercent(progress);
+            });
           },
           cancelled: () => print('Cancelled file open'));
     }));
