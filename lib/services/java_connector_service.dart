@@ -34,6 +34,11 @@ class JavaConnectorService {
       var json = jsonDecode(data);
       var basicPayload = BasicPayload.fromJson(json);
 
+      if (basicPayload.type == null) {
+        print('Received payload that is not receivable! ${basicPayload.type} (${basicPayload.type.type})');
+        return;
+      }
+
       if (!basicPayload.type.receivable) {
         print('Received payload that is not receivable! ${basicPayload.type}');
         return;
@@ -104,12 +109,13 @@ class JavaConnectorService {
     payload.state = uuid;
     write(jsonEncode(payload.toJson()));
 
+    var usingError = error;
     if (logError) {
       if (error == null) {
-        error = (e) => print(
+        usingError = (e) => print(
             'Error received while sending request: ${e.message}\n${e.stacktrace}');
       } else {
-        error = (e) {
+        usingError = (e) {
           print(
               'Error received while sending request: ${e.message}\n${e.stacktrace}');
           error(e);
@@ -120,18 +126,18 @@ class JavaConnectorService {
     if (statusResponse != null) {
       waiting[uuid] = StatusableRequest(
           response: (t) => response(t),
-          statusResponse: statusResponse,
-          error: error);
+          statusResponse: (t) => statusResponse(t),
+          error: usingError);
     } else if (callback != null) {
       waiting[uuid] = CallbackRequest(
-          response: (t) => response(t), callback: callback, error: error);
+          response: (t) => response(t), callback: callback, error: usingError);
     } else {
       waiting[uuid] = BasicRequest(response: (payload) {
         waiting.remove(uuid);
         response(payload);
       }, error: (payload) {
         waiting.remove(uuid);
-        error(payload);
+        usingError(payload);
       });
     }
   }
@@ -158,12 +164,8 @@ class CallbackRequest<T> extends Request {
       {Function(dynamic) response, this.callback, Function(ErrorPayload) error})
       : super(response, error);
 
-  static CallbackRequest from(BasicRequest request) {
-    if (request is CallbackRequest) {
-      return request as CallbackRequest;
-    }
-
-    return null;
+  static CallbackRequest from(dynamic request) {
+    return request is CallbackRequest ? request : null;
   }
 }
 
@@ -171,8 +173,8 @@ class CallbackRequest<T> extends Request {
 /// responses do not use the normal [response] function, as in the future
 /// status and normal responses may be different, to allow for a easier
 /// expandable protocol in the future.
-class StatusableRequest<T> extends Request {
-  void Function(T) statusResponse;
+class StatusableRequest extends Request {
+  void Function(dynamic) statusResponse;
 
   StatusableRequest(
       {Function(dynamic) response,
@@ -180,14 +182,10 @@ class StatusableRequest<T> extends Request {
       Function(ErrorPayload) error})
       : super(response, error);
 
-  static StatusableRequest from(BasicRequest request) {
-    if (request is StatusableRequest) {
-      return request as StatusableRequest;
-    }
-
-    return null;
+  static StatusableRequest from(dynamic request) {
+    return request is StatusableRequest ? request : null;
   }
 
-  static callResponse(BasicRequest request, dynamic response) =>
+  static callResponse(dynamic request, dynamic response) =>
       from(request)?.statusResponse?.call(response);
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
@@ -14,6 +15,7 @@ import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/payload/list_item.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
+import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 import 'package:sheety_gui/ui/widgets/file_icon.dart';
 import 'package:sheety_gui/utility.dart';
 
@@ -175,6 +177,7 @@ class ListModel extends BaseModel {
       Navigator.of(context).pop();
       _selection.sendRequest(
           multi: true,
+          initialDirectory: r'E:\\DriveStore\\upload', // TODO: Temporary
           selected: (files) {
             if (files.isEmpty) {
               return;
@@ -194,6 +197,8 @@ class ListModel extends BaseModel {
               if (response.status == 'COMPLETE') {
                 print('Complete, adding ${response.items.length} file(s)');
                 listItems.addAll(response.items);
+
+                Timer(Duration(milliseconds: BottomStatus.ANIMATION_DURATION), () => hideLoading());
               }
             });
           },

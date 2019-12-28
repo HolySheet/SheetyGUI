@@ -6,6 +6,9 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 
 class BottomStatus extends StatelessWidget {
+
+  static const int ANIMATION_DURATION = 500;
+
   final Widget child;
   final BaseModel model;
 
@@ -56,7 +59,7 @@ class BottomStatus extends StatelessWidget {
                                   child: LinearPercentIndicator(
                                 width: max(300, screenSize.width / 3).toDouble() - 20,
                                 animation: true,
-                                animationDuration: 500,
+                                animationDuration: ANIMATION_DURATION,
                                 animateFromLastPercent: true,
                                 lineHeight: 8.0,
                                 percent: model.loadingPercent,

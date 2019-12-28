@@ -34,10 +34,9 @@ class FileSelectionService {
           var chooser = new JFileChooser($initialDirectory);
           chooser.setMultiSelectionEnabled($multi);
           chooser.setDialogTitle("$title");
-          var result = chooser.${mode.method}(null);
+          var result = chooser.${mode.method}(new JFrame());
           if (result == 0) {
-              var selected = Stream.of(chooser.getSelectedFiles(), new File[]{chooser.getSelectedFile()})
-                      .flatMap(Arrays::stream)
+              var selected = Stream.of(chooser.isMultiSelectionEnabled() ? chooser.getSelectedFiles() : new File[]{chooser.getSelectedFile()})
                       .map(File::getAbsolutePath)
                       .collect(Collectors.toUnmodifiableList());
       

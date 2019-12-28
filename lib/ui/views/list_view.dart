@@ -87,7 +87,7 @@ class FileListViewState extends State<FileListView> with TickerProviderStateMixi
                                   style: fileTitleDisplay),
                             ),
                             lineText(filesize(model.showingSelected.size ?? 0), topPadding: 20),
-                            lineText('${model.showingSelected.sheets ?? ''} Sheets'),
+                            lineText('${model.showingSelected.sheets ?? ''} Sheet${model.showingSelected.sheets != 1 ? 's' : ''}'),
                             lineText('Last Modified: ${model.formatDate(model.showingSelected.date ?? 0)}'),
                             lineText('Ownership', style: Theme.of(context).textTheme.body2),
                             Padding(

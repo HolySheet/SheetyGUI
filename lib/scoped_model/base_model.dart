@@ -55,7 +55,7 @@ class BaseModel extends Model {
   }
 
   void updatePercent(double percent) {
-    loadingPercent = percent.clamp(0, 1);
+    loadingPercent = percent.clamp(0, 1).toDouble();
 
     if (_loading) {
       notifyListeners();
