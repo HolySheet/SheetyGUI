@@ -35,7 +35,7 @@ class ListModel extends BaseModel {
   int _lastMulti = 0;
 
   bool get multiSelect =>
-      DateTime.now().millisecondsSinceEpoch - _lastMulti <= 100;
+      DateTime.now().millisecondsSinceEpoch - _lastMulti <= 550;
 
   // ANIMATION
 
@@ -193,23 +193,23 @@ class ListModel extends BaseModel {
 
             showLoading();
 
-            _driveIO.uploadFiles(files.map((file) => file.path).toList(),
-                startUpload: (file) {
-                  var name = File(file).uri.pathSegments.last;
-                  updateText('Uploading $name');
-                },
-                statusCallback: (index, progress, response) {
-                  updatePercent(progress);
+            _driveIO.uploadFiles(
+              files.map((file) => file.path).toList(),
+              startUpload: (file) {
+                var name = File(file).uri.pathSegments.last;
+                updateText('Uploading $name');
+              },
+              statusCallback: (index, progress, response) {
+                updatePercent(progress);
 
-                  if (response.status == 'COMPLETE') {
-                    print(
-                        'Request complete, adding ${response.items.length} file(s)');
-                    listItems.addAll(response.items);
-                  }
-                },
-                completeUpload: () => Timer(
-                    Duration(milliseconds: BottomStatus.ANIMATION_DURATION),
-                    () => hideLoading()));
+                if (response.status == 'COMPLETE') {
+                  print(
+                      'Request complete, adding ${response.items.length} file(s)');
+                  listItems.addAll(response.items);
+                }
+              },
+              completeUpload: () => hideLoading(true),
+            );
           },
           cancelled: () => print('Cancelled file open'));
     }));
@@ -226,7 +226,19 @@ class ListModel extends BaseModel {
     confirmDialog(
       context,
       onAccept: () {
-        print('Downloading ${selected.length} files...');
+        print('Downloading $selected');
+
+        showLoading();
+
+        var idNameMap = Map<String, ListItem>.fromIterable(selected,
+            key: (item) => item.id);
+
+        _driveIO.downloadFiles(idNameMap.keys.toList(),
+            startDownload: (id) =>
+                updateText('Downloading ${idNameMap[id].name}'),
+            statusCallback: (index, progress, response) =>
+                updatePercent(progress),
+            completeDownload: () => hideLoading(true));
       },
       title: 'Confirm Download',
       body:
@@ -251,7 +263,7 @@ class ListModel extends BaseModel {
         showLoading();
 
         var idNameMap = Map<String, ListItem>.fromIterable(selected,
-            key: (item) => item.id, value: (item) => item);
+            key: (item) => item.id);
 
         _driveIO.removeFiles(idNameMap.keys.toList(), startRemove: (id) {
           updateText('Removing ${idNameMap[id].name}');
@@ -259,15 +271,13 @@ class ListModel extends BaseModel {
           updatePercent(progress);
 
           if (response.status == 'COMPLETE') {
-            print('Request complete, removed ${selected[index].name}');
             listItems.remove(selected[index]);
             selected.remove(selected[index]);
             notifyListeners();
           }
         }, completeRemove: () {
           startCollapse();
-          Timer(Duration(milliseconds: BottomStatus.ANIMATION_DURATION),
-              () => hideLoading());
+          hideLoading(true);
         });
       },
       title: 'Confirm Remove',

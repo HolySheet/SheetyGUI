@@ -96,8 +96,8 @@ class JavaConnectorService {
   /// request types that have [PayloadType.hasStatusResponse] true.
   void sendRequest<T extends BasicPayload>(
       {BasicPayload payload,
-      Function(T) response,
-      Function(T) statusResponse,
+      void Function(T) response,
+      void Function(T) statusResponse,
       Map<String, Function(CodeExecutionCallbackResponse)> callback,
       Function(ErrorPayload) error,
       bool logError = true}) {
@@ -177,7 +177,7 @@ class StatusableRequest extends Request {
   void Function(dynamic) statusResponse;
 
   StatusableRequest(
-      {Function(dynamic) response,
+      {void Function(dynamic) response,
       this.statusResponse,
       Function(ErrorPayload) error})
       : super(response, error);

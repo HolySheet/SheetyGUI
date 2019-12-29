@@ -4,6 +4,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 
 ///
 /// A model that handles the bottom loading bar
@@ -38,13 +39,20 @@ class BaseModel extends Model {
     return bottomAnimationController.forward();
   }
 
-  Future<void> hideLoading() {
+  Future<void> hideLoading([bool delayed = false]) {
     if (!_loading) {
       return null;
     }
     _loading = false;
-    return bottomAnimationController.reverse()
-        .then((_) => loadingPercent = 0);
+
+    var completer = Completer<void>();
+
+    Timer(Duration(milliseconds: delayed ? BottomStatus.ANIMATION_DURATION : 0),
+            () => bottomAnimationController.reverse()
+                .then((_) => loadingPercent = 0)
+                .then((_) => completer.complete()));
+
+    return completer.future;
   }
 
   void updateText(String text) {

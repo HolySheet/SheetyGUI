@@ -1,9 +1,10 @@
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload/list_item.dart';
+import 'package:sheety_gui/services/payload/status_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
 /// See [UploadStatusResponse](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#UploadStatusResponse-4)
-class UploadStatusResponse extends BasicPayload {
+class UploadStatusResponse extends BasicPayload implements StatusResponse {
   final String status;
   final double percentage;
   final List<ListItem> items;

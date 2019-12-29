@@ -1,8 +1,9 @@
 import 'package:sheety_gui/services/payload/basic_payload.dart';
+import 'package:sheety_gui/services/payload/status_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 
 /// See [DownloadStatusResponse](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#DownloadStatusResponse-6)
-class DownloadStatusResponse extends BasicPayload {
+class DownloadStatusResponse extends StatusResponse {
   final String status;
   final double percentage;
 
