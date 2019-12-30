@@ -19,12 +19,12 @@ void main() {
   test('From JSON', () {
     var payload = ListRequest.fromJson(expected);
 
-    expect('Query', payload.query);
+    expect(payload.query, 'Query');
   });
 
   test('To JSON', () {
     var payload = ListRequest('Query');
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

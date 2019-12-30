@@ -20,12 +20,12 @@ void main() {
   test('From JSON', () {
     var payload = RemoveRequest.fromJson(expected);
 
-    expect('1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq', payload.id);
+    expect(payload.id, '1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq');
   });
 
   test('To JSON', () {
     var payload = RemoveRequest('1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq');
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

@@ -16,6 +16,7 @@ import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/payload/list_item.dart';
 import 'package:sheety_gui/services/payload/list_response.dart';
+import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 import 'package:sheety_gui/ui/widgets/file_icon.dart';
 import 'package:sheety_gui/utility.dart';
@@ -24,6 +25,7 @@ class ListModel extends BaseModel {
   static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011,
       keyLabel: r'ctrl', debugName: 'Key Control');
 
+  final _settings = locator<SettingsService>();
   final _selection = locator<FileSelectionService>();
   final _driveIO = locator<DriveIOService>();
   final fabKey = GlobalKey();
@@ -230,10 +232,13 @@ class ListModel extends BaseModel {
 
         showLoading();
 
-        var idNameMap = Map<String, ListItem>.fromIterable(selected,
+        final idNameMap = Map<String, ListItem>.fromIterable(selected,
             key: (item) => item.id);
 
-        _driveIO.downloadFiles(idNameMap.keys.toList(),
+        final idPathMap = Map<String, String>.fromIterable(selected,
+            key: (item) => item.id, value: (item) => '${Setting.downloadDirectory.value}/${item.name}');
+
+        _driveIO.downloadFiles(idPathMap,
             startDownload: (id) =>
                 updateText('Downloading ${idNameMap[id].name}'),
             statusCallback: (index, progress, response) =>

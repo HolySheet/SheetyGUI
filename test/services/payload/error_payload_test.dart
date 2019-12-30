@@ -20,10 +20,10 @@ void main() {
   test('From JSON', () {
     var payload = ErrorPayload.fromJson(expected);
 
-    expect(0, payload.code);
-    expect(0, payload.type.type);
-    expect('Error message', payload.message);
-    expect('Stacktrace here', payload.stacktrace);
+    expect(payload.code, 0);
+    expect(payload.type.type, 0);
+    expect(payload.message, 'Error message');
+    expect(payload.stacktrace, 'Stacktrace here');
   });
 
   test('To JSON', () {

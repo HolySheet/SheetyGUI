@@ -5,13 +5,14 @@ import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 import 'package:test/test.dart';
 
-final expected = jsonDecode('''
+final expected = jsonDecode(r'''
 {
   "code": 1,
   "type": 5,
   "message": "Success",
   "state": null,
-  "id": "1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq"
+  "id": "1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq",
+  "path": "E:\\file.mp4"
 }
 ''');
 
@@ -19,12 +20,13 @@ void main() {
   test('From JSON', () {
     var payload = DownloadRequest.fromJson(expected);
 
-    expect('1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq', payload.id);
+    expect(payload.id, '1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq');
+    expect(payload.path, 'E:\\file.mp4');
   });
 
   test('To JSON', () {
-    var payload = DownloadRequest('1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq');
+    var payload = DownloadRequest('1KLruEf0d8GJgf7JGaYUiNnW_Pe0Zumvq', 'E:\\file.mp4');
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

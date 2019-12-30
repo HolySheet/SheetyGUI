@@ -18,15 +18,15 @@ void main() {
   test('From JSON', () {
     var payload = BasicPayload.fromJson(expected);
 
-    expect(1, payload.code);
-    expect(PayloadType.LIST_REQUEST, payload.type);
-    expect('Success', payload.message);
-    expect('0317d1f0-6053-4cce-89ba-9e896784820a', payload.state);
+    expect(payload.code, 1);
+    expect(payload.type, PayloadType.LIST_REQUEST);
+    expect(payload.message, 'Success');
+    expect(payload.state, '0317d1f0-6053-4cce-89ba-9e896784820a');
   });
 
   test('To JSON', () {
     var payload = BasicPayload(1, PayloadType.LIST_REQUEST, 'Success', '0317d1f0-6053-4cce-89ba-9e896784820a');
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

@@ -38,15 +38,15 @@ void main() {
   test('From JSON', () {
     var payload = CodeExecutionCallbackResponse.fromJson(expected);
 
-    expect('030ccb35-8e0b-4c13-a0a1-9a6347ad8849', payload.callbackState);
-    expect(<String>['theTime', 'theTimeHalved'], payload.snippetResult);
-    expect(SerializedVariable('theTime', 'java.lang.Long', 1577394471130), payload.variables[0]);
-    expect(SerializedVariable('theTimeHalved', 'java.lang.Long', 788697235565), payload.variables[1]);
+    expect(payload.callbackState, '030ccb35-8e0b-4c13-a0a1-9a6347ad8849');
+    expect(payload.snippetResult, <String>['theTime', 'theTimeHalved']);
+    expect(payload.variables[0], SerializedVariable('theTime', 'java.lang.Long', 1577394471130));
+    expect(payload.variables[1], SerializedVariable('theTimeHalved', 'java.lang.Long', 788697235565));
   });
 
   test('To JSON', () {
     var payload = CodeExecutionCallbackResponse('030ccb35-8e0b-4c13-a0a1-9a6347ad8849', ['theTime', 'theTimeHalved'], [SerializedVariable('theTime', 'java.lang.Long', 1577394471130), SerializedVariable('theTimeHalved', 'java.lang.Long', 788697235565)]);
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

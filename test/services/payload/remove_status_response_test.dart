@@ -18,13 +18,13 @@ void main() {
   test('From JSON', () {
     var payload = RemoveStatusResponse.fromJson(expected);
 
-    expect('REMOVING', payload.status);
-    expect(0.856, payload.percentage);
+    expect(payload.status, 'REMOVING');
+    expect(payload.percentage, 0.856);
   });
 
   test('To JSON', () {
     var payload = RemoveStatusResponse('REMOVING', 0.856);
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

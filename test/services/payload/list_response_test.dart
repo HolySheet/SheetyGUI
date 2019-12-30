@@ -29,16 +29,16 @@ void main() {
 
     var first = payload.items.first;
 
-    expect('test.txt', first.name);
-    expect(54321, first.size);
-    expect(6, first.sheets);
-    expect(123456789, first.date);
-    expect('abcdefghijklmnopqrstuvwxyz', first.id);
+    expect(first.name, 'test.txt');
+    expect(first.size, 54321);
+    expect(first.sheets, 6);
+    expect(first.date, 123456789);
+    expect(first.id, 'abcdefghijklmnopqrstuvwxyz');
   });
 
   test('To JSON', () {
     var payload = ListResponse([ListItem('test.txt', 54321, 6, 123456789, 'abcdefghijklmnopqrstuvwxyz')]);
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

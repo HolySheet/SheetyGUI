@@ -30,13 +30,13 @@ void main() {
   test('From JSON', () {
     var payload = CodeExecutionResponse.fromJson(expected);
 
-    expect(<String>[r'$1'], payload.snippetResult);
-    expect([SerializedVariable(r'$1', 'java.util.ImmutableCollections.Map1', {'one': 1})], payload.variables);
+    expect(payload.snippetResult, <String>[r'$1']);
+    expect(payload.variables, [SerializedVariable(r'$1', 'java.util.ImmutableCollections.Map1', {'one': 1})]);
   });
 
   test('To JSON', () {
     var payload = CodeExecutionResponse([r'$1'], [SerializedVariable(r'$1', 'java.util.ImmutableCollections.Map1', {'one': 1})]);
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

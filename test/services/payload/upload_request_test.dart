@@ -23,14 +23,14 @@ void main() {
   test('From JSON', () {
     var payload = UploadRequest.fromJson(expected);
 
-    expect('file:///c:/file.txt', payload.file);
-    expect('multipart', payload.upload);
-    expect('zip', payload.compression);
+    expect(payload.file, 'file:///c:/file.txt');
+    expect(payload.upload, 'multipart');
+    expect(payload.compression, 'zip');
   });
 
   test('To JSON', () {
     var payload = UploadRequest('file:///c:/file.txt', 'multipart', 'zip');
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

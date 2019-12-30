@@ -23,13 +23,13 @@ void main() {
   test('From JSON', () {
     var payload = CodeExecutionRequest.fromJson(expected);
 
-    expect(r'Map.of("one", 1)', payload.invokeCode);
-    expect(['x', 'y'], payload.returnVariables);
+    expect(payload.invokeCode, r'Map.of("one", 1)');
+    expect(payload.returnVariables, ['x', 'y']);
   });
 
   test('To JSON', () {
     var payload = CodeExecutionRequest(r'Map.of("one", 1)', ['x', 'y']);
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }

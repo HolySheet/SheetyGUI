@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
+import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/ui/views/list_view.dart';
 
 void main() {
@@ -15,6 +16,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  final settingsService = locator<SettingsService>();
   final connectorService = locator<JavaConnectorService>();
 
   final _memoizer = AsyncMemoizer<dynamic>();
@@ -26,10 +28,12 @@ class MyApp extends StatelessWidget {
       title: 'HolySheet',
       theme: ThemeData(
 //        brightness: Brightness.dark,
-          fontFamily: 'Roboto',
+        fontFamily: 'Roboto',
       ),
       home: FutureBuilder(
-        future: _memoizer.runOnce(() async => connectorService.connect()),
+        future: _memoizer.runOnce(() async => settingsService
+            .init()
+            .then((_) => connectorService.connect())),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:

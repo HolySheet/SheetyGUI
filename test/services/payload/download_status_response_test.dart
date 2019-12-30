@@ -21,13 +21,13 @@ void main() {
   test('From JSON', () {
     var payload = DownloadStatusResponse.fromJson(expected);
 
-    expect('DOWNLOADING', payload.status);
-    expect(0.856, payload.percentage);
+    expect(payload.status, 'DOWNLOADING');
+    expect(payload.percentage, 0.856);
   });
 
   test('To JSON', () {
     var payload = DownloadStatusResponse('DOWNLOADING', 0.856);
 
-    expect(expected, payload.toJson());
+    expect(payload.toJson(), expected);
   });
 }
