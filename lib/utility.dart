@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/widgets.dart';
 
 extension IntIterableUtility<int> on Iterable {
@@ -19,4 +21,15 @@ extension GlobalKeyEx on GlobalKey {
       return null;
     }
   }
+}
+
+extension PathUtility on String {
+  /// Replaces both \ and / with the [Platform.pathSeparator].
+  String path() => this.replaceAll('(\\|/)', Platform.pathSeparator);
+
+  /// Creates a new [File] object with correct path separators from the given String.
+  File file() => File(path());
+
+  /// Creates a new [Directory] object with correct path separators from the given String.
+  Directory directory() => Directory(path());
 }

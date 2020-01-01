@@ -14,13 +14,19 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
   final Function(T) onModelReady;
   final Function(T) onModelEnd;
   final Function(BuildContext, T) fab;
+  final String topButtonRoute;
+  final String topButtonLabel;
+  final IconData topButtonIcon;
 
   BaseView(
       {GlobalKey<ScaffoldState> scaffoldKey,
       ScopedModelDescendantBuilder<T> builder,
       this.onModelReady,
       this.onModelEnd,
-      this.fab})
+      this.fab,
+      this.topButtonRoute,
+      this.topButtonLabel,
+      this.topButtonIcon})
       : _scaffoldKey = scaffoldKey,
         _builder = builder;
 
@@ -41,65 +47,21 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
           floatingActionButton: widget.fab?.call(context, model),
           body: BottomStatus(
             model: model,
-            child: Row(
+            child: Stack(
               children: [
-                Container(
-                  child: Card(
-                    elevation: 5,
-                    shape: ContinuousRectangleBorder(),
-                    margin: EdgeInsets.all(0),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: SizedBox(
-                            width: 36,
-                            height: 36,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(
-                                      'https://lh3.googleusercontent.com/-3hnUnOvs4Pg/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rc4nDtmlwLdIFlLDoVo1oiZGWyhnQ.CMID/photo.jpg'),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        getLeftButton(
-                            icon: Icons.view_module,
-                            label: 'File list',
-                            onPressed: () => Navigator.pushNamed(context, '/')), // MaterialPageRoute(builder: (t) => FileListView())
-                        getLeftButton(
-                            icon: Icons.developer_board,
-                            label: 'Console',
-                            onPressed: () {
-                              print('Pressed console');
-                            }),
-                        getLeftButton(
-                            icon: Icons.schedule,
-                            label: 'Schedule',
-                            onPressed: () {
-                              print('Pressed schedule');
-                            }),
-                        getLeftButton(
-                            icon: Icons.insert_drive_file,
-                            label: 'Logs',
-                            onPressed: () {
-                              print('Pressed logs');
-                            }),
-                        Spacer(),
-                        getLeftButton(
-                            icon: Icons.settings,
-                            label: 'Settings',
-                            onPressed: () => Navigator.pushNamed(context, '/settings')),
-                      ],
-                    ),
-                  ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    getLeftButton(
+                        icon: widget.topButtonIcon,
+                        label: widget.topButtonLabel,
+                        onPressed: () =>
+                            Navigator.pushNamed(context, widget.topButtonRoute)),
+                  ],
                 ),
                 Builder(
-                  builder: (context) => widget._builder?.call(context, child, model),
+                  builder: (context) =>
+                      widget._builder?.call(context, child, model),
                 ),
               ],
             ),
@@ -121,11 +83,11 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
   @override
   Widget build(BuildContext context) {
     return ScopedModel<T>(
-        model: _model,
-        child: ScopedModelDescendant<T>(
-          child: Container(color: Colors.red),
-          builder: otherBuilder,
-        ),
+      model: _model,
+      child: ScopedModelDescendant<T>(
+        child: Container(color: Colors.red),
+        builder: otherBuilder,
+      ),
     );
   }
 

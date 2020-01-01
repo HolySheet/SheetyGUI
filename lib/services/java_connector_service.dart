@@ -31,7 +31,7 @@ class JavaConnectorService {
     print('Connecting...');
 
     await socketStart((data) {
-      var json = jsonDecode(data);
+      var json = jsonDecode(data.replaceAll('\r\n', '\n'));
       var basicPayload = BasicPayload.fromJson(json);
 
       if (basicPayload.type == null) {

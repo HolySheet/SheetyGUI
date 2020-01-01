@@ -37,7 +37,9 @@ class ListModel extends BaseModel {
   int _lastMulti = 0;
 
   bool get multiSelect =>
-      DateTime.now().millisecondsSinceEpoch - _lastMulti <= 550;
+      DateTime
+          .now()
+          .millisecondsSinceEpoch - _lastMulti <= 550;
 
   // ANIMATION
 
@@ -61,7 +63,9 @@ class ListModel extends BaseModel {
 
   void onKey(RawKeyEvent event) {
     if (event.data.logicalKey == keyControl) {
-      _lastMulti = DateTime.now().millisecondsSinceEpoch;
+      _lastMulti = DateTime
+          .now()
+          .millisecondsSinceEpoch;
     }
   }
 
@@ -105,12 +109,13 @@ class ListModel extends BaseModel {
     }
   }
 
-  ListItem getCombined() => ListItem(
-      '${selected.length} Selected',
-      selected.sumMap((item) => item.size),
-      selected.sumMap((item) => item.sheets),
-      selected[0].date,
-      selected.map((item) => item.id).join(', '));
+  ListItem getCombined() =>
+      ListItem(
+          '${selected.length} Selected',
+          selected.sumMap((item) => item.size),
+          selected.sumMap((item) => item.sheets),
+          selected[0].date,
+          selected.map((item) => item.id).join(', '));
 
   String formatDate(int date) {
     var dateTime = DateTime.fromMillisecondsSinceEpoch(date);
@@ -167,7 +172,8 @@ class ListModel extends BaseModel {
   TickerFuture resetCollapse() => sidebarAnimationController.reverse();
 
   /// Collapses the sidebar
-  void startCollapse() => sidebarAnimationController.forward().whenComplete(() {
+  void startCollapse() =>
+      sidebarAnimationController.forward().whenComplete(() {
         showSidebar = false;
         showingSelected = null;
         notifyListeners();
@@ -177,44 +183,54 @@ class ListModel extends BaseModel {
     newButtonAngleAnimationController.forward();
 
     Navigator.of(context).push(CustomDialog(fabKey.globalPaintBounds.center,
-        () => newButtonAngleAnimationController.reverse(), () {
-      // TODO: This is temporary
-      Navigator.of(context).pop();
-      showLoading()?.then((_) => dummyAnimation());
-    }, () {
-      Navigator.of(context).pop();
-      _selection.sendRequest(
-          multi: true,
-          initialDirectory: r'E:\\DriveStore\\upload', // TODO: Temporary
-          selected: (files) {
-            if (files.isEmpty) {
-              return;
-            }
+            () => newButtonAngleAnimationController.reverse(), () {
+          // TODO: This is temporary
+          Navigator.of(context).pop();
 
-            print('Uploading: $files');
-
-            showLoading();
-
-            _driveIO.uploadFiles(
-              files.map((file) => file.path).toList(),
-              startUpload: (file) {
-                var name = File(file).uri.pathSegments.last;
-                updateText('Uploading $name');
-              },
-              statusCallback: (index, progress, response) {
-                updatePercent(progress);
-
-                if (response.status == 'COMPLETE') {
-                  print(
-                      'Request complete, adding ${response.items.length} file(s)');
-                  listItems.addAll(response.items);
+          inputPrompt(context,
+            title: 'Insert from drive link',
+            body: 'Paste below a Google Drive link (or file ID) to a file to download and upload to Sheets. The file must be accessable by the logged in user, either by ownership or sharing.',
+            hint: 'https://drive.google.com/file/d/file_id',
+            buttonText: 'Insert',
+            onSubmit: (url) {
+              print('Submitted $url');
+            },
+          );
+        }, () {
+          Navigator.of(context).pop();
+          _selection.sendRequest(
+              multi: true,
+              initialDirectory: r'E:\\DriveStore\\upload', // TODO: Temporary
+              selected: (files) {
+                if (files.isEmpty) {
+                  return;
                 }
+
+                print('Uploading: $files');
+
+                showLoading();
+
+                _driveIO.uploadFiles(
+                  files.map((file) => file.path).toList(),
+                  startUpload: (file) {
+                    var name = File(file).uri.pathSegments.last;
+                    updateText('Uploading $name');
+                  },
+                  statusCallback: (index, progress, response) {
+                    updatePercent(progress);
+
+                    if (response.status == 'COMPLETE') {
+                      print(
+                          'Request complete, adding ${response.items
+                              .length} file(s)');
+                      listItems.addAll(response.items);
+                    }
+                  },
+                  completeUpload: () => hideLoading(true),
+                );
               },
-              completeUpload: () => hideLoading(true),
-            );
-          },
-          cancelled: () => print('Cancelled file open'));
-    }));
+              cancelled: () => print('Cancelled file open'));
+        }));
   }
 
   void pressDownload(BuildContext context) {
@@ -224,7 +240,7 @@ class ListModel extends BaseModel {
 
     var combined = getCombined();
     var downloadText =
-        selected.length == 1 ? 'this file' : 'these ${selected.length} files';
+    selected.length == 1 ? 'this file' : 'these ${selected.length} files';
     confirmDialog(
       context,
       onAccept: () {
@@ -236,7 +252,8 @@ class ListModel extends BaseModel {
             key: (item) => item.id);
 
         final idPathMap = Map<String, String>.fromIterable(selected,
-            key: (item) => item.id, value: (item) => '${Setting.downloadDirectory.value}/${item.name}');
+            key: (item) => item.id,
+            value: (item) => '${Setting.downloadDirectory.value}/${item.name}');
 
         _driveIO.downloadFiles(idPathMap,
             startDownload: (id) =>
@@ -247,7 +264,8 @@ class ListModel extends BaseModel {
       },
       title: 'Confirm Download',
       body:
-          'Are you sure you want to download $downloadText? This will take up ${filesize(combined.size)}.',
+      'Are you sure you want to download $downloadText? This will take up ${filesize(
+          combined.size)}.',
       acceptText: 'Download',
     );
   }
@@ -259,7 +277,7 @@ class ListModel extends BaseModel {
 
     var combined = getCombined();
     var downloadText =
-        selected.length == 1 ? 'this file' : 'these ${selected.length} files';
+    selected.length == 1 ? 'this file' : 'these ${selected.length} files';
     confirmDialog(
       context,
       onAccept: () {
@@ -287,7 +305,10 @@ class ListModel extends BaseModel {
       },
       title: 'Confirm Remove',
       body:
-          'Are you sure you want to remove $downloadText? This will remove ${filesize(combined.size)} across ${combined.sheets} sheet${combined.sheets != 1 ? 's' : ''}.',
+      'Are you sure you want to remove $downloadText? This will remove ${filesize(
+          combined.size)} across ${combined.sheets} sheet${combined.sheets != 1
+          ? 's'
+          : ''}.',
       acceptText: 'Remove',
       acceptColor: Colors.red,
     );
@@ -315,20 +336,21 @@ class CustomDialog extends PopupRoute {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation,
-          Animation<double> secondaryAnimation) =>
+      Animation<double> secondaryAnimation) =>
       Stack(children: [
         AnimatedBuilder(
           animation: animation,
-          builder: (c, child) => Transform.translate(
-            offset: Offset(
-                buttonPosition.dx - (58 / 2),
-                buttonPosition.dy -
-                    lerpDouble(100, height + 50, animation.value)),
-            child: Transform.scale(
-              scale: animation.value,
-              child: child,
-            ),
-          ),
+          builder: (c, child) =>
+              Transform.translate(
+                offset: Offset(
+                    buttonPosition.dx - (58 / 2),
+                    buttonPosition.dy -
+                        lerpDouble(100, height + 50, animation.value)),
+                child: Transform.scale(
+                  scale: animation.value,
+                  child: child,
+                ),
+              ),
           child: Card(
             elevation: 10,
             shape: RoundedRectangleBorder(
@@ -340,7 +362,7 @@ class CustomDialog extends PopupRoute {
                 children: [
                   IconButton(
                     icon:
-                        Icon(Icons.insert_drive_file, semanticLabel: 'Insert'),
+                    Icon(Icons.link, semanticLabel: 'Insert Shared'),
                     // Idk what this should do
                     onPressed: insert,
                   ),

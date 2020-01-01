@@ -1,21 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:sheety_gui/utility.dart';
+
 class SettingsService {
   static String get userHome =>
       Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'];
 
-  File settingsFile;
+  File settingsFile = '$userHome/.holysheet'.file();
 
   Future<void> init() {
-    settingsFile = File('$userHome\\.holysheet');
     print('Settings located at $settingsFile');
 
     return settingsFile
         .exists()
         .then((exists) => exists ? loadSettings() : saveSettings())
-        .then((_) => print('Finished loading settings'))
-        .then((_) => print('Downloads is: ${Setting.downloadDirectory.value}'));
+        .then((_) => print('Finished loading settings'));
   }
 
   void setSetting<T>(Setting<T> setting, T value) {
@@ -29,15 +29,13 @@ class SettingsService {
       settingsFile.writeAsString(jsonEncode(Setting.toJson()));
 
   Future<void> loadSettings() {
-    return settingsFile
-      .readAsString()
-      .then((json) {
+    return settingsFile.readAsString().then((json) {
       try {
         Setting.fromJson(jsonDecode(json));
       } catch (e) {
         print(e);
       }
-    }).then((_) => print('HERE!!!!!!!'));
+    });
   }
 }
 
@@ -72,7 +70,6 @@ class Setting<T> {
 
   Setting(this.name, this.def, [this.allowed = const []]) : _value = def {
     values.add(this);
-    print(values);
   }
 
   static Setting<dynamic> fromName(String name) =>

@@ -15,23 +15,24 @@ class SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return BaseView<SettingsModel>(
+        topButtonIcon: Icons.arrow_back,
+        topButtonLabel: 'Back',
+        topButtonRoute: '/',
         scaffoldKey: GlobalKey<ScaffoldState>(),
-        builder: (context, child, model) => Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Text('Settings',
-                        style: Theme.of(context).textTheme.display1),
-                    SizedBox(height: 10),
-                    getFileOption(
-                        model, 'Download Directory', Setting.downloadDirectory),
-                    getMultiOption(model, 'Compression', Setting.compression),
-                    getMultiOption(model, 'Upload Type', Setting.upload),
-                  ],
-                ),
-              ),
-            ));
+        builder: (context, child, model) => Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Text('Settings',
+                  style: Theme.of(context).textTheme.display1),
+              SizedBox(height: 10),
+              getFileOption(
+                  model, 'Download Directory', Setting.downloadDirectory),
+              getMultiOption(model, 'Compression', Setting.compression),
+              getMultiOption(model, 'Upload Type', Setting.upload),
+            ],
+          ),
+        ));
   }
 
   Widget getToggleOption(
