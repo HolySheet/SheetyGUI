@@ -16,7 +16,6 @@ class FileListViewState extends State<FileListView>
     with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-//    FocusScope.of(context).requestFocus(focusNode);
     final fileTitleDisplay =
         Theme.of(context).textTheme.display1.copyWith(fontSize: 24);
     return BaseView<ListModel>(

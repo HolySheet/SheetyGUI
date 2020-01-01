@@ -2,7 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
+import 'package:sheety_gui/scoped_model/settings_model.dart';
 import 'package:sheety_gui/service_locator.dart';
+import 'package:sheety_gui/ui/views/list_view.dart';
+import 'package:sheety_gui/ui/views/settings_view.dart';
 import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 
 class BaseView<T extends BaseModel> extends StatefulWidget {
@@ -35,7 +38,7 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
     otherBuilder = (context, child, BaseModel model) => Scaffold(
           resizeToAvoidBottomInset: true,
           key: widget._scaffoldKey,
-          floatingActionButton: widget.fab(context, model),
+          floatingActionButton: widget.fab?.call(context, model),
           body: BottomStatus(
             model: model,
             child: Row(
@@ -67,9 +70,7 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
                         getLeftButton(
                             icon: Icons.view_module,
                             label: 'File list',
-                            onPressed: () {
-                              print('Pressed list');
-                            }),
+                            onPressed: () => Navigator.pushNamed(context, '/')), // MaterialPageRoute(builder: (t) => FileListView())
                         getLeftButton(
                             icon: Icons.developer_board,
                             label: 'Console',
@@ -92,35 +93,28 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
                         getLeftButton(
                             icon: Icons.settings,
                             label: 'Settings',
-                            onPressed: () {
-                              print('Pressed settings');
-                            }),
+                            onPressed: () => Navigator.pushNamed(context, '/settings')),
                       ],
                     ),
                   ),
                 ),
                 Builder(
-                  builder: (context) => widget._builder(context, child, model),
+                  builder: (context) => widget._builder?.call(context, child, model),
                 ),
               ],
             ),
           ),
         );
 
-    if (widget.onModelReady != null) {
-      _model.init(this);
-      widget.onModelReady(_model);
-    }
+    _model.init(this);
+    widget.onModelReady?.call(_model);
 
     super.initState();
   }
 
   @override
   void dispose() {
-    if (widget.onModelEnd != null) {
-      widget.onModelEnd(_model);
-    }
-
+    widget.onModelEnd?.call(_model);
     super.dispose();
   }
 
@@ -131,7 +125,8 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
         child: ScopedModelDescendant<T>(
           child: Container(color: Colors.red),
           builder: otherBuilder,
-        ));
+        ),
+    );
   }
 
   Widget getLeftButton({IconData icon, String label, Function() onPressed}) =>

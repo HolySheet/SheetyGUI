@@ -16,8 +16,9 @@ class FileSelectionService {
       Function() cancelled,
       bool multi = false,
       String title = 'File chooser',
+      String initialDirectory = '',
       SelectionMode mode = SelectionMode.open,
-      String initialDirectory = ''}) {
+      FileSelection selectionMode = FileSelection.files}) {
     if (initialDirectory.isNotEmpty) {
       initialDirectory = '"$initialDirectory"';
     }
@@ -34,6 +35,7 @@ class FileSelectionService {
           var chooser = new JFileChooser($initialDirectory);
           chooser.setMultiSelectionEnabled($multi);
           chooser.setDialogTitle("$title");
+          chooser.setFileSelectionMode(${selectionMode.index});
           var result = chooser.${mode.method}(new JFrame());
           if (result == 0) {
               var selected = Stream.of(chooser.isMultiSelectionEnabled() ? chooser.getSelectedFiles() : new File[]{chooser.getSelectedFile()})
@@ -68,4 +70,10 @@ class SelectionMode {
   final String method;
 
   const SelectionMode(this.method);
+}
+
+enum FileSelection {
+  files,       // JFileChooser.FILES_ONLY = 0
+  directories, // JFileChooser.DIRECTORIES_ONLY = 1
+  all,         // JFileChooser.FILES_AND_DIRECTORIES = 2
 }
