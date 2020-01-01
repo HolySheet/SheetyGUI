@@ -14,6 +14,7 @@ final expected = jsonDecode('''
   "message": "Success",
   "state": null,
   "file": "file:///c:/file.txt",
+  "id": null,
   "upload": "multipart",
   "compression": "zip"
 }
@@ -29,7 +30,7 @@ void main() {
   });
 
   test('To JSON', () {
-    var payload = UploadRequest('file:///c:/file.txt', 'multipart', 'zip');
+    var payload = UploadRequest('multipart', 'zip', file: 'file:///c:/file.txt');
 
     expect(payload.toJson(), expected);
   });

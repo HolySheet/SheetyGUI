@@ -45,7 +45,7 @@ class DriveIOService {
           Function() completeUpload}) =>
       _sendRequestForIds(
         files,
-        createRequest: (file) => UploadRequest(file, 'multipart', 'zip'),
+        createRequest: (file) => UploadRequest('multipart', 'zip', file: file),
         statusCallback: statusCallback,
         startAction: startUpload,
         completeAction: completeUpload,
@@ -86,6 +86,19 @@ class DriveIOService {
         statusCallback: statusCallback,
         startAction: startDownload,
         completeAction: completeDownload,
+      );
+
+  void insertFromDrive(String id,
+          {Function(double progress, UploadStatusResponse response)
+              statusCallback,
+          Function(String) startUpload,
+          Function() completeUpload}) =>
+      _sendRequestForIds(
+        [id],
+        createRequest: (_) => UploadRequest('multipart', 'zip', id: id),
+        statusCallback: (_, progress, response) => statusCallback(progress, response),
+        startAction: startUpload,
+        completeAction: completeUpload,
       );
 
   void _sendRequestForIds<T extends StatusResponse>(List<String> ids,

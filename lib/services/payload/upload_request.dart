@@ -5,24 +5,25 @@ import 'package:sheety_gui/services/payload_type.dart';
 /// See [UploadRequest](https://github.com/RubbaBoy/HolySheet/blob/master/SocketProtocol.md#UploadRequest-3)
 class UploadRequest extends BasicPayload {
   final String file;
+  final String id;
   final String upload;
   final String compression;
 
-  UploadRequest(this.file, this.upload, this.compression,
-      [String message = 'Success'])
+  UploadRequest(this.upload, this.compression, {this.file, this.id, String message = 'Success'})
       : super(1, PayloadType.UPLOAD_REQUEST, message);
 
   UploadRequest.fromJson(Map<String, dynamic> json)
       : file = json['file'],
+        id = json['id'],
         upload = json['upload'],
         compression = json['compression'],
         super.fromJson(json, type: PayloadType.UPLOAD_REQUEST);
 
   Map<String, dynamic> toJson() => super.toJson()
-    ..addAll({'file': file, 'upload': upload, 'compression': compression});
+    ..addAll({'file': file, 'id': id, 'upload': upload, 'compression': compression});
 
   @override
   String toString() {
-    return 'UploadRequest{code: $code, type: $type, message: $message, state: $state, file: $file, upload: $upload, compression: $compression}';
+    return 'UploadRequest{code: $code, type: $type, message: $message, state: $state, file: $file, id: $id, upload: $upload, compression: $compression}';
   }
 }

@@ -126,6 +126,7 @@ class BaseModel extends Model {
     String hint,
   }) {
     final controller = TextEditingController();
+    var previousText = '';
     showDialog(
         context: context,
         barrierDismissible: true,
@@ -164,7 +165,8 @@ class BaseModel extends Model {
                                 var selection = controller.selection;
                                 var base = selection.baseOffset;
                                 var end = selection.extentOffset;
-                                if (text.codeUnitAt(base - 1) == 22) {
+                                var codeUnit = text.codeUnitAt(base - 1);
+                                if (codeUnit == 22) { // Ctrl + V
                                   var left = text.substring(0, max(0, base - 1)); // -1 to get rid of 22
                                   var right = text.substring(end, text.length);
 
@@ -174,7 +176,22 @@ class BaseModel extends Model {
                                     controller.text = '$left$clipboard$right';
                                     controller.selection = TextSelection.fromPosition(TextPosition(offset: left.length + clipboard.length));
                                   });
+                                } else if (codeUnit == 1) { // Ctrl + A
+                                  try {
+                                    var codes = previousText.codeUnits.toList(growable: true);
+                                    codes.removeWhere((c) => c == 1);
+                                    text = String.fromCharCodes(codes);
+                                    controller.text = text;
+                                    controller.selection = TextSelection(
+                                        baseOffset: 0,
+                                        extentOffset: text.length);
+                                  } catch (e, s) {
+                                    print(e);
+                                    print(s);
+                                  }
                                 }
+
+                                previousText = controller.text;
                               },
                               decoration: InputDecoration(
                                 hintText: hint,
@@ -201,20 +218,6 @@ class BaseModel extends Model {
                   ),
                 ),
               ),
-
-//          child: SimpleDialog(
-//            title: Text(title),
-//                children: [
-//                  Padding(
-//                    padding: EdgeInsets.all(20),
-//                    child: Column(
-//                      children: [
-//                        Text(body)
-//                      ],
-//                    ),
-//                  )
-//                ],
-//              ),
             ));
   }
 }
