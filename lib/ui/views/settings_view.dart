@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sheety_gui/scoped_model/list_model.dart';
 import 'package:sheety_gui/scoped_model/settings_model.dart';
@@ -12,6 +13,8 @@ class SettingsView extends StatefulWidget {
 }
 
 class SettingsViewState extends State<SettingsView> {
+  static const int MB = 1000000;
+
   @override
   Widget build(BuildContext context) {
     return BaseView<SettingsModel>(
@@ -20,19 +23,19 @@ class SettingsViewState extends State<SettingsView> {
         topButtonRoute: '/',
         scaffoldKey: GlobalKey<ScaffoldState>(),
         builder: (context, child, model) => Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Text('Settings',
-                  style: Theme.of(context).textTheme.display1),
-              SizedBox(height: 10),
-              getFileOption(
-                  model, 'Download Directory', Setting.downloadDirectory),
-              getMultiOption(model, 'Compression', Setting.compression),
-              getMultiOption(model, 'Upload Type', Setting.upload),
-            ],
-          ),
-        ));
+              padding: EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Text('Settings', style: Theme.of(context).textTheme.display1),
+                  SizedBox(height: 10),
+                  getFileOption(
+                      model, 'Download Directory', Setting.downloadDirectory),
+                  getMultiOption(model, 'Compression', Setting.compression),
+                  getMultiOption(model, 'Upload Type', Setting.upload),
+                  getMegabyteOption(model, 'Sheet Size', Setting.sheetSize),
+                ],
+              ),
+            ));
   }
 
   Widget getToggleOption(
@@ -63,7 +66,7 @@ class SettingsViewState extends State<SettingsView> {
             value: model.getSetting(setting),
             underline: Container(
               height: 2,
-              color: Colors.blueAccent,
+              color: Color(0xFFC1C1C1),
             ),
             items: setting.allowed
                 .map((value) => DropdownMenuItem<String>(
@@ -85,7 +88,7 @@ class SettingsViewState extends State<SettingsView> {
           SizedBox(width: 30),
           Expanded(
             child: TextField(
-              controller: model.getInputController(setting),
+              controller: model.getFileInputController(setting),
               onSubmitted: (value) => model.changedFile(setting, value),
             ),
           ),
@@ -93,6 +96,25 @@ class SettingsViewState extends State<SettingsView> {
             icon: Icon(Icons.insert_drive_file),
             onPressed: () => model.openFolderSelection(setting),
           ),
+        ],
+      );
+
+  Widget getMegabyteOption(
+          SettingsModel model, String text, Setting<int> setting) =>
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(text),
+          SizedBox(width: 30),
+              ConstrainedBox(
+                constraints: BoxConstraints(minWidth: 100, maxWidth: 100),
+                child: TextField(
+                        decoration: InputDecoration(suffixText: 'MB'),
+                        keyboardType: TextInputType.number,
+                        controller: model.getSizeInputController(setting),
+                        onSubmitted: (value) => model.changeSize(setting, value),
+                      ),
+              ),
         ],
       );
 }

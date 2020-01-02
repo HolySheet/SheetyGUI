@@ -16,7 +16,8 @@ final expected = jsonDecode('''
   "file": "file:///c:/file.txt",
   "id": null,
   "upload": "multipart",
-  "compression": "zip"
+  "compression": "zip",
+  "sheetSize": 10000000
 }
 ''');
 
@@ -27,10 +28,11 @@ void main() {
     expect(payload.file, 'file:///c:/file.txt');
     expect(payload.upload, 'multipart');
     expect(payload.compression, 'zip');
+    expect(payload.sheetSize, 10000000);
   });
 
   test('To JSON', () {
-    var payload = UploadRequest('multipart', 'zip', file: 'file:///c:/file.txt');
+    var payload = UploadRequest('multipart', 'zip', 10000000, file: 'file:///c:/file.txt');
 
     expect(payload.toJson(), expected);
   });

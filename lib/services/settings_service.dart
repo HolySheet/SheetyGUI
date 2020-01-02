@@ -18,13 +18,6 @@ class SettingsService {
         .then((_) => print('Finished loading settings'));
   }
 
-  void setSetting<T>(Setting<T> setting, T value) {
-    setting.value = value;
-    saveSettings();
-  }
-
-  T getSetting<T>(Setting<T> setting) => setting.value;
-
   Future<void> saveSettings() =>
       settingsFile.writeAsString(jsonEncode(Setting.toJson()));
 
@@ -37,6 +30,17 @@ class SettingsService {
       }
     });
   }
+
+  void setSetting<T>(Setting<T> setting, T value) {
+    setting.value = value;
+    saveSettings();
+  }
+
+  T getSetting<T>(Setting<T> setting) => setting.value;
+
+  operator [](Setting<dynamic> setting) => getSetting(setting);
+
+  operator []=(Setting<dynamic> setting, dynamic value) => setSetting(setting, value);
 }
 
 class Setting<T> {
@@ -49,7 +53,10 @@ class Setting<T> {
   static final Setting<String> upload =
       Setting('upload', Upload.multipart, Upload.values);
 
-  static final List<Setting> values = [];
+  static final Setting<int> sheetSize =
+      Setting('sheetSize', 10000000); // 10MB
+
+  static final List<Setting> values = [downloadDirectory, compression, upload, sheetSize];
 
   final String name;
   final T def;
@@ -68,9 +75,7 @@ class Setting<T> {
     _value = value;
   }
 
-  Setting(this.name, this.def, [this.allowed = const []]) : _value = def {
-    values.add(this);
-  }
+  Setting(this.name, this.def, [this.allowed = const []]) : _value = def;
 
   static Setting<dynamic> fromName(String name) =>
       values.firstWhere((setting) => setting.name == name, orElse: () => null);
@@ -85,6 +90,8 @@ class Setting<T> {
     if (setting is Setting<File>) {
       return setting.value.path;
     } else if (setting is Setting<String>) {
+      return setting.value;
+    } else if (setting is Setting<int>) {
       return setting.value;
     } else {
       print('Don\'t know what to do with: $setting');
@@ -103,9 +110,16 @@ class Setting<T> {
       setting.value = File(value);
     } else if (setting is Setting<String>) {
       setting.value = value;
+    } else if (setting is Setting<int>) {
+      setting.value = value;
     } else {
       print('Unknown setting type: $setting');
     }
+  }
+
+  @override
+  String toString() {
+    return 'Setting{name: $name, def: $def}';
   }
 }
 

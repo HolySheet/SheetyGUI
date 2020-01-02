@@ -14,9 +14,11 @@ import 'package:sheety_gui/services/payload/remove_status_response.dart';
 import 'package:sheety_gui/services/payload/status_response.dart';
 import 'package:sheety_gui/services/payload/upload_request.dart';
 import 'package:sheety_gui/services/payload/upload_status_response.dart';
+import 'package:sheety_gui/services/settings_service.dart';
 
 class DriveIOService {
   final _conn = locator<JavaConnectorService>();
+  final _settings = locator<SettingsService>();
 
   Future<List<ListItem>> listFiles({String query = ''}) {
     var completer = Completer<List<ListItem>>();
@@ -42,10 +44,9 @@ class DriveIOService {
           {Function(int index, double progress, UploadStatusResponse response)
               statusCallback,
           Function(String) startUpload,
-          Function() completeUpload}) =>
-      _sendRequestForIds(
+          Function() completeUpload}) => _sendRequestForIds(
         files,
-        createRequest: (file) => UploadRequest('multipart', 'zip', file: file),
+        createRequest: (file) => UploadRequest(_settings[Setting.upload], _settings[Setting.compression], _settings[Setting.sheetSize], file: file),
         statusCallback: statusCallback,
         startAction: startUpload,
         completeAction: completeUpload,
@@ -92,10 +93,9 @@ class DriveIOService {
           {Function(double progress, UploadStatusResponse response)
               statusCallback,
           Function(String) startUpload,
-          Function() completeUpload}) =>
-      _sendRequestForIds(
+          Function() completeUpload}) => _sendRequestForIds(
         [id],
-        createRequest: (_) => UploadRequest('multipart', 'zip', id: id),
+        createRequest: (_) => UploadRequest(_settings[Setting.upload], _settings[Setting.compression], _settings[Setting.sheetSize], id: id),
         statusCallback: (_, progress, response) => statusCallback(progress, response),
         startAction: startUpload,
         completeAction: completeUpload,

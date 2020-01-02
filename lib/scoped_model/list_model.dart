@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:filesize/filesize.dart';
 import 'package:flutter/animation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -374,16 +375,18 @@ class CustomDialog extends PopupRoute {
               width: 50,
               height: height,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.link, semanticLabel: 'Insert Shared'),
-                    // Idk what this should do
-                    onPressed: insert,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.file_upload, semanticLabel: 'Upload'),
-                    // Upload a given file
-                    onPressed: upload,
+                  _getButton(
+                      icon: Icons.link,
+                      semanticLabel: 'Insert Shared',
+                      onTap: () {
+                        print('Insert');
+                      }),
+                  _getButton(
+                    icon: Icons.file_upload,
+                    semanticLabel: 'Upload',
+                    onTap: upload,
                   ),
                 ],
               ),
@@ -391,6 +394,25 @@ class CustomDialog extends PopupRoute {
           ),
         )
       ]);
+
+  Widget _getButton(
+          {@required IconData icon,
+          @required Function() onTap,
+          String semanticLabel}) =>
+      ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            radius: 50,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Icon(icon, semanticLabel: semanticLabel),
+            ),
+            onTap: onTap,
+          ),
+        ),
+      );
 
   @override
   void didComplete(dynamic result) {

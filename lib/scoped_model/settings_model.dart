@@ -18,6 +18,8 @@ import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/utility.dart';
 
 class SettingsModel extends BaseModel {
+  static const int MB = 1000000;
+
   final _settings = locator<SettingsService>();
   final _selection = locator<FileSelectionService>();
   final _settingControllers = Map<Setting, TextEditingController>();
@@ -34,9 +36,13 @@ class SettingsModel extends BaseModel {
     notifyListeners();
   }
 
-  TextEditingController getInputController(Setting<File> setting) =>
+  TextEditingController getFileInputController(Setting<File> setting) =>
       _settingControllers.putIfAbsent(
           setting, () => TextEditingController(text: getSetting(setting).path));
+
+  TextEditingController getSizeInputController(Setting<int> setting) =>
+      _settingControllers.putIfAbsent(
+          setting, () => TextEditingController(text: '${getSetting(setting) / MB}'));
 
   void openFolderSelection(Setting<File> setting) {
     _selection.sendRequest(
@@ -45,14 +51,18 @@ class SettingsModel extends BaseModel {
         selectionMode: FileSelection.directories,
         selected: (file) {
           var first = file.first;
-          print('Selected ${first.path}');
-          getInputController(setting).text = first.path;
+          getFileInputController(setting).text = first.path;
           _settings.setSetting(setting, first);
         });
   }
 
   void changedFile(Setting<File> setting, String value) {
-    getInputController(setting).text = value;
+    getFileInputController(setting).text = value;
     _settings.setSetting(setting, File(value));
+  }
+
+  void changeSize(Setting<int> setting, String value) {
+    final num = int.parse(value) * MB;
+    _settings.setSetting(setting, num);
   }
 }

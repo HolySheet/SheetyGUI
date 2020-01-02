@@ -96,23 +96,23 @@ class FileListViewState extends State<FileListView>
                               'Last Modified: ${model.formatDate(model.showingSelected.date ?? 0)}'),
                           lineText('Ownership',
                               style: Theme.of(context).textTheme.body2),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.link),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'Shared',
-                                    textAlign: TextAlign.left,
-                                    style: Theme.of(context).textTheme.body1,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+//                          Padding(
+//                            padding: const EdgeInsets.only(top: 10),
+//                            child: SizedBox(
+//                              width: double.infinity,
+//                              child: Row(
+//                                children: [
+//                                  Icon(Icons.link),
+//                                  SizedBox(width: 10),
+//                                  Text(
+//                                    'Shared',
+//                                    textAlign: TextAlign.left,
+//                                    style: Theme.of(context).textTheme.body1,
+//                                  ),
+//                                ],
+//                              ),
+//                            ),
+//                          ),
                           lineText('Owned by Adam Yarris'),
                           Padding(
                             padding: const EdgeInsets.only(top: 15),
