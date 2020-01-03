@@ -40,12 +40,16 @@ class SettingsService {
 
   operator [](Setting<dynamic> setting) => getSetting(setting);
 
-  operator []=(Setting<dynamic> setting, dynamic value) => setSetting(setting, value);
+  operator []=(Setting<dynamic> setting, dynamic value) =>
+      setSetting(setting, value);
 }
 
 class Setting<T> {
   static final Setting<File> downloadDirectory = Setting(
       'downloadDirectory', File('${SettingsService.userHome}\\Downloads'));
+
+  static final Setting<String> backendConnect =
+      Setting('backendConnect', BackendConnect.ioStream, BackendConnect.values);
 
   static final Setting<String> compression =
       Setting('compression', Compression.zip, Compression.values);
@@ -53,10 +57,14 @@ class Setting<T> {
   static final Setting<String> upload =
       Setting('upload', Upload.multipart, Upload.values);
 
-  static final Setting<int> sheetSize =
-      Setting('sheetSize', 10000000); // 10MB
+  static final Setting<int> sheetSize = Setting('sheetSize', 10000000); // 10MB
 
-  static final List<Setting> values = [downloadDirectory, compression, upload, sheetSize];
+  static final List<Setting> values = [
+    downloadDirectory,
+    compression,
+    upload,
+    sheetSize
+  ];
 
   final String name;
   final T def;
@@ -124,15 +132,22 @@ class Setting<T> {
 }
 
 class Compression {
-  static final String none = 'none';
-  static final String zip = 'zip'; // default
+  static const String none = 'none';
+  static const String zip = 'zip'; // default
 
-  static final List<String> values = [none, zip];
+  static const List<String> values = [none, zip];
 }
 
 class Upload {
-  static final String multipart = 'multipart'; // default
-  static final String direct = 'direct';
+  static const String multipart = 'multipart'; // default
+  static const String direct = 'direct';
 
-  static final List<String> values = [multipart, direct];
+  static const List<String> values = [multipart, direct];
+}
+
+class BackendConnect {
+  static const String ioStream = 'ioStream'; // default
+  static const String socket = 'socket';
+
+  static const List<String> values = [ioStream, socket];
 }

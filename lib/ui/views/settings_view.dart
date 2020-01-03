@@ -26,10 +26,13 @@ class SettingsViewState extends State<SettingsView> {
               padding: EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Text('Settings', style: Theme.of(context).textTheme.display1),
+                  Text('Settings',
+                      style: Theme.of(context).textTheme.display1),
                   SizedBox(height: 10),
                   getFileOption(
                       model, 'Download Directory', Setting.downloadDirectory),
+                  getMultiOption(
+                      model, 'Backend Connect', Setting.backendConnect),
                   getMultiOption(model, 'Compression', Setting.compression),
                   getMultiOption(model, 'Upload Type', Setting.upload),
                   getMegabyteOption(model, 'Sheet Size', Setting.sheetSize),
@@ -106,15 +109,15 @@ class SettingsViewState extends State<SettingsView> {
         children: [
           Text(text),
           SizedBox(width: 30),
-              ConstrainedBox(
-                constraints: BoxConstraints(minWidth: 100, maxWidth: 100),
-                child: TextField(
-                        decoration: InputDecoration(suffixText: 'MB'),
-                        keyboardType: TextInputType.number,
-                        controller: model.getSizeInputController(setting),
-                        onSubmitted: (value) => model.changeSize(setting, value),
-                      ),
-              ),
+          ConstrainedBox(
+            constraints: BoxConstraints(minWidth: 100, maxWidth: 100),
+            child: TextField(
+              decoration: InputDecoration(suffixText: 'MB'),
+              keyboardType: TextInputType.number,
+              controller: model.getSizeInputController(setting),
+              onSubmitted: (value) => model.changeSize(setting, value),
+            ),
+          ),
         ],
       );
 }

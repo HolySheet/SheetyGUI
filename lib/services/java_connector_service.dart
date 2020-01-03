@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/payload/basic_payload.dart';
 import 'package:sheety_gui/services/payload/code_execution_callback_response.dart';
 import 'package:sheety_gui/services/payload/code_execution_request.dart';
@@ -16,62 +17,120 @@ import 'package:sheety_gui/services/payload/remove_status_response.dart';
 import 'package:sheety_gui/services/payload/upload_request.dart';
 import 'package:sheety_gui/services/payload/upload_status_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
+import 'package:sheety_gui/services/settings_service.dart';
 import 'package:uuid/uuid.dart';
 
 final Uuid _uuid = Uuid();
 
 class JavaConnectorService {
+  final _settings = locator<SettingsService>();
+
+  // TODO: Packaged and/or dynamic jar path
+  static const jarPath = 'E:\\DriveStore\\build\\libs\\HolySheet-1.0.0-all.jar';
+  static const port = 4567;
+
+  String _connectType;
+  Function(String) sendData;
+
   bool connected = false;
 
   Socket _socket;
 
   Map<String, Request> waiting = {};
 
+  JavaConnectorService() {
+    _connectType = _settings.getSetting(Setting.backendConnect);
+  }
+
   Future<void> connect() async {
-    print('Connecting...');
+    switch (_connectType) {
+      case BackendConnect.ioStream:
+        print('Starting backend...');
 
-    await socketStart((data) {
-      var json = jsonDecode(data.replaceAll('\r\n', '\n'));
-      var basicPayload = BasicPayload.fromJson(json);
+        // java -jar --add-opens=jdk.jshell/jdk.jshell=ALL-UNNAMED HolySheet-1.0.0-all.jar -s 4567
+        final process = await Process.start('javaw', [
+          '-jar',
+          '--add-opens=jdk.jshell/jdk.jshell=ALL-UNNAMED',
+          jarPath,
+          '-p',
+          '$pid',
+          '-i',
+        ]);
+        process.stdout.transform(utf8.decoder).listen(_processData);
+        sendData = (data) => process.stdin.writeln(data);
 
-      if (basicPayload.type == null) {
-        print('Received payload that is not receivable! ${basicPayload.type} (${basicPayload.type.type})');
-        return;
+        print('Started Java process with PID of: ${process.pid}');
+        break;
+      case BackendConnect.socket:
+        final process = await Process.start('javaw', [
+          '-jar',
+          '--add-opens=jdk.jshell/jdk.jshell=ALL-UNNAMED',
+          jarPath,
+          '-s',
+          '$port',
+          '-p',
+          '$pid'
+        ]);
+        print('Started Java process with PID of: ${process.pid}');
+
+        sendData = (data) => _socket.writeln(data);
+        await socketStart(_processData);
+        break;
+    }
+  }
+
+  void _processData(String data) {
+    data = data.trim().replaceAll('\r\n', '\n');
+    // Cancel out anything that's probably not JSON
+    if (!data.startsWith('{')) {
+      if (data.isNotEmpty) {
+        print('[Java] $data');
       }
+      return;
+    }
 
-      if (!basicPayload.type.receivable) {
-        print('Received payload that is not receivable! ${basicPayload.type}');
-        return;
-      }
+    var json = jsonDecode(data);
+    var basicPayload = BasicPayload.fromJson(json);
 
-      var uuid = basicPayload.state;
+    if (basicPayload.type == null) {
+      print(
+          'Received payload that is not receivable! ${basicPayload.type} (${basicPayload.type.type})');
+      return;
+    }
 
-      var request = waiting[uuid];
+    if (!basicPayload.type.receivable) {
+      print('Received payload that is not receivable! ${basicPayload.type}');
+      return;
+    }
 
-      if (request == null) {
-        return;
-      }
+    var uuid = basicPayload.state;
 
-      ({
-        PayloadType.ERROR: () =>
-            request.error(ErrorPayload.fromJson(json)),
-        PayloadType.LIST_RESPONSE: () =>
-            request.response(ListResponse.fromJson(json)),
-        PayloadType.UPLOAD_STATUS_RESPONSE: () =>
-            StatusableRequest.callResponse(request, UploadStatusResponse.fromJson(json)),
-        PayloadType.DOWNLOAD_STATUS_RESPONSE: () =>
-            StatusableRequest.callResponse(request, DownloadStatusResponse.fromJson(json)),
-        PayloadType.REMOVE_STATUS_RESPONSE: () =>
-            StatusableRequest.callResponse(request, RemoveStatusResponse.fromJson(json)),
-        PayloadType.CODE_EXECUTION_RESPONSE: () =>
-            request.response(CodeExecutionResponse.fromJson(json)),
-        PayloadType.CODE_EXECUTION_CALLBACK_RESPONSE: () {
-          var response = CodeExecutionCallbackResponse.fromJson(json);
-          CallbackRequest.from(request)?.callback[response.callbackState]
-              ?.call(response);
-        },
-      }[basicPayload.type])();
-    });
+    var request = waiting[uuid];
+
+    if (request == null) {
+      return;
+    }
+
+    ({
+      PayloadType.ERROR: () => request.error(ErrorPayload.fromJson(json)),
+      PayloadType.LIST_RESPONSE: () =>
+          request.response(ListResponse.fromJson(json)),
+      PayloadType.UPLOAD_STATUS_RESPONSE: () => StatusableRequest.callResponse(
+          request, UploadStatusResponse.fromJson(json)),
+      PayloadType.DOWNLOAD_STATUS_RESPONSE: () =>
+          StatusableRequest.callResponse(
+              request, DownloadStatusResponse.fromJson(json)),
+      PayloadType.REMOVE_STATUS_RESPONSE: () => StatusableRequest.callResponse(
+          request, RemoveStatusResponse.fromJson(json)),
+      PayloadType.CODE_EXECUTION_RESPONSE: () =>
+          request.response(CodeExecutionResponse.fromJson(json)),
+      PayloadType.CODE_EXECUTION_CALLBACK_RESPONSE: () {
+        var response = CodeExecutionCallbackResponse.fromJson(json);
+        CallbackRequest.from(request)
+            ?.callback[response.callbackState]
+            ?.call(response);
+      },
+    }[basicPayload.type])();
   }
 
   Future<void> socketStart(Function(String) onReceive) async {
@@ -107,7 +166,7 @@ class JavaConnectorService {
         'statusResponse is only available for payload types that allow for them');
     var uuid = _uuid.v4();
     payload.state = uuid;
-    write(jsonEncode(payload.toJson()));
+    sendData(jsonEncode(payload.toJson()));
 
     var usingError = error;
     if (logError) {
@@ -141,8 +200,6 @@ class JavaConnectorService {
       });
     }
   }
-
-  void write(String data) => _socket.writeln(data);
 }
 
 abstract class Request {
