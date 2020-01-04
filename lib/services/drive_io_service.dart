@@ -28,7 +28,6 @@ class DriveIOService {
       response: (response) {
         completer.complete(response.items);
       },
-      error: completer.completeError,
     );
 
     return completer.future;

@@ -18,42 +18,52 @@ import 'package:sheety_gui/services/payload/upload_request.dart';
 import 'package:sheety_gui/services/payload/upload_status_response.dart';
 import 'package:sheety_gui/services/payload_type.dart';
 import 'package:sheety_gui/services/settings_service.dart';
+import 'package:sheety_gui/utility.dart';
 import 'package:uuid/uuid.dart';
 
 final Uuid _uuid = Uuid();
 
 class JavaConnectorService {
-  final _settings = locator<SettingsService>();
-
-  // TODO: Packaged and/or dynamic jar path
-  static const jarPath = 'E:\\DriveStore\\build\\libs\\HolySheet-1.0.0-all.jar';
+  static final _settings = locator<SettingsService>();
   static const port = 4567;
 
-  String _connectType;
-  Function(String) sendData;
+  final File jarPath;
+  final String _connectType;
 
-  bool connected = false;
+  Function(String) sendData;
 
   Socket _socket;
 
   Map<String, Request> waiting = {};
 
-  JavaConnectorService() {
-    _connectType = _settings.getSetting(Setting.backendConnect);
-  }
+  JavaConnectorService()
+      : jarPath = findHolySheet(),
+        _connectType = _settings.getSetting(Setting.backendConnect);
+
+  static File findHolySheet() =>
+      Directory.current.listSync().firstWhere((file) {
+        var name = file.uri.pathSegments.last;
+        return name.startsWith('HolySheet') && name.endsWith('.jar');
+      }, orElse: () => '${Directory.current}\\HolySheet.jar'.file());
 
   Future<void> connect() async {
+    if (!(await jarPath.exists())) {
+      print('Couldn\'t find HolySheet jar at ${jarPath.path}');
+      exit(0);
+    }
+
+    print('Starting backend...');
+
     switch (_connectType) {
       case BackendConnect.ioStream:
-        print('Starting backend...');
-
-        // java -jar --add-opens=jdk.jshell/jdk.jshell=ALL-UNNAMED HolySheet-1.0.0-all.jar -s 4567
         final process = await Process.start('javaw', [
           '-jar',
           '--add-opens=jdk.jshell/jdk.jshell=ALL-UNNAMED',
-          jarPath,
+          jarPath.path,
           '-p',
           '$pid',
+          '-a',
+          'credentials.json',
           '-i',
         ]);
         process.stdout.transform(utf8.decoder).listen(_processData);
@@ -65,11 +75,13 @@ class JavaConnectorService {
         final process = await Process.start('javaw', [
           '-jar',
           '--add-opens=jdk.jshell/jdk.jshell=ALL-UNNAMED',
-          jarPath,
+          jarPath.path,
           '-s',
           '$port',
           '-p',
-          '$pid'
+          '$pid',
+          '-a',
+          'credentials.json',
         ]);
         print('Started Java process with PID of: ${process.pid}');
 
@@ -84,7 +96,7 @@ class JavaConnectorService {
     // Cancel out anything that's probably not JSON
     if (!data.startsWith('{')) {
       if (data.isNotEmpty) {
-        print('[Java] $data');
+        print(data);
       }
       return;
     }
@@ -159,7 +171,7 @@ class JavaConnectorService {
       void Function(T) statusResponse,
       Map<String, Function(CodeExecutionCallbackResponse)> callback,
       Function(ErrorPayload) error,
-      bool logError = true}) {
+      bool logError = false}) {
     assert(callback == null || payload is CodeExecutionRequest,
         'A callback can only be defined if a CodeExecutionRequest is being sent');
     assert(statusResponse == null || payload.type.hasStatusResponse,
@@ -196,7 +208,7 @@ class JavaConnectorService {
         response(payload);
       }, error: (payload) {
         waiting.remove(uuid);
-        usingError(payload);
+        usingError?.call(payload);
       });
     }
   }

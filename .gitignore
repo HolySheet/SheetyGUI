@@ -40,4 +40,6 @@ windows
 linux
 macos
 
-tokens/
+credentials.json
+private/
+HolySheet*.jar

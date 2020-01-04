@@ -107,11 +107,14 @@ class ListModel extends BaseModel {
   }
 
   ListItem getCombined() => ListItem(
-      '${selected.length} Selected',
-      selected.sumMap((item) => item.size),
-      selected.sumMap((item) => item.sheets),
-      selected[0].date,
-      selected.map((item) => item.id).join(', '));
+        '${selected.length} Selected',
+        selected.sumMap((item) => item.size),
+        selected.sumMap((item) => item.sheets),
+        selected[0].date,
+        selected.map((item) => item.id).join(', '),
+        !selected.any((item) => !item.selfOwned),
+        '',
+      );
 
   String formatDate(int date) {
     var dateTime = DateTime.fromMillisecondsSinceEpoch(date);
