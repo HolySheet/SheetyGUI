@@ -21,17 +21,18 @@ class DriveIOService {
   final _settings = locator<SettingsService>();
   List<ListItem> cachedItems;
 
-  Future<List<ListItem>> listFiles({bool cache = true, String query = ''}) {
+  Future<List<ListItem>> listFiles({bool cache = true}) {
     if (cache && cachedItems != null) {
-      return Future.value(cachedItems);
+      return Future.value(List.of(cachedItems));
     }
 
     var completer = Completer<List<ListItem>>();
 
     _conn.sendRequest<ListResponse>(
-      payload: ListRequest(query),
+      payload: ListRequest(''),
       response: (response) {
-        completer.complete(response.items);
+        cachedItems = response.items;
+        completer.complete(List.of(response.items));
       },
     );
 

@@ -26,17 +26,24 @@ import 'package:url_launcher/url_launcher.dart' as url_launcher;
 class ListModel extends BaseModel {
   static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011,
       keyLabel: r'ctrl', debugName: 'Key Control');
+  static const LogicalKeyboardKey keyEnter = LogicalKeyboardKey(0x00000036,
+      keyLabel: r'enter', debugName: 'Key Enter');
 
   final _settings = locator<SettingsService>();
   final _selection = locator<FileSelectionService>();
   final _driveIO = locator<DriveIOService>();
   final fabKey = GlobalKey();
   final focusNode = FocusNode();
+  final keyFocus = FocusNode();
+  final searchFocus = FocusNode();
+  final searchController = TextEditingController();
 
   List<ListItem> listItems = [];
   List<ListItem> selected = [];
   ListItem showingSelected; // Filled with dummy values when multiple selected
+  String currQuery = '';
   int _lastMulti = 0;
+  int _lastSearch = 0;
 
   bool get multiSelect =>
       DateTime.now().millisecondsSinceEpoch - _lastMulti <= 550;
@@ -50,12 +57,20 @@ class ListModel extends BaseModel {
   Animation<double> newButtonAngleAnimation;
 
   bool showSidebar = false;
+  bool displayShared = true;
 
   double startX = 0;
   double lastX = 0;
 
-  void refreshFiles() {
-    _driveIO.listFiles().then((list) {
+  void refreshFiles({bool cache = true, String query = ''}) {
+    currQuery = query;
+    _driveIO.listFiles(cache: cache).then((list) {
+      if (!displayShared) {
+        list.retainWhere((item) => item.selfOwned);
+      }
+
+      list.retainWhere((item) => item.name.contains(query));
+
       listItems = list;
 
       selected.clear();
@@ -64,9 +79,11 @@ class ListModel extends BaseModel {
     });
   }
 
-  void onKey(RawKeyEvent event) {
+  void onKey(RawKeyEvent event, BuildContext context) {
     if (event.data.logicalKey == keyControl) {
       _lastMulti = DateTime.now().millisecondsSinceEpoch;
+    } else if (event.data.logicalKey == keyEnter) {
+      submitSearch(context);
     }
   }
 
@@ -108,6 +125,21 @@ class ListModel extends BaseModel {
     } else {
       showingSelected = selected[0];
     }
+  }
+
+  void submitSearch(BuildContext context) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastSearch >= 500) {
+      _lastSearch = now;
+      refreshFiles(query: searchController.text);
+      Timer(Duration(milliseconds: 100), () => FocusScope.of(context).requestFocus(searchFocus));
+    }
+  }
+
+  void toggleShared() {
+    displayShared = !displayShared;
+    refreshFiles(query: currQuery);
+    notifyListeners();
   }
 
   ListItem getCombined() => ListItem(
@@ -224,6 +256,7 @@ class ListModel extends BaseModel {
                 print(
                     'Request complete, adding ${response.items.length} file(s)');
                 listItems.addAll(response.items);
+                notifyListeners();
               }
             },
             completeUpload: () => hideLoading(true),
@@ -257,6 +290,7 @@ class ListModel extends BaseModel {
                   print(
                       'Request complete, adding ${response.items.length} file(s)');
                   listItems.addAll(response.items);
+                  notifyListeners();
                 }
               },
               completeUpload: () => hideLoading(true),
@@ -388,9 +422,9 @@ class CustomDialog extends PopupRoute {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _getButton(
-                      icon: Icons.link,
-                      semanticLabel: 'Clone Shared',
-                      onTap: insert,
+                    icon: Icons.link,
+                    semanticLabel: 'Clone Shared',
+                    onTap: insert,
                   ),
                   _getButton(
                     icon: Icons.file_upload,

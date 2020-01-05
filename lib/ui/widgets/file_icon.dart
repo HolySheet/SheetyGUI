@@ -26,7 +26,6 @@ class FileIconState extends State<FileIcon> {
   @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: () => onTap?.call(context, listItem),
-        onSecondaryTapDown: (tdd) => print('Secondary'),
         child: Card(
           elevation: widget.selected ? 10 : 5,
           shape: RoundedRectangleBorder(
@@ -125,10 +124,6 @@ class ExtensionPreview {
       'https://drive-thirdparty.googleusercontent.com/64/type/application/vnd.google-apps.document',
       ['txt', 'rtf', 'log', 'doc', 'docx', 'pdf']);
 
-//  static const folder = FileIcon('folder', []);
-//  static const form = FileIcon('form', []);
-//  static const fusiontable = FileIcon('fusiontable', []); // arrow going up like graph
-  // unused static const map = FileIcon('map', []);
   static const image = ExtensionPreview(
       'https://drive-thirdparty.googleusercontent.com/64/type/image', [
     'jpeg',
