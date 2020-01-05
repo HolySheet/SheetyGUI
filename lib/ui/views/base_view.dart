@@ -14,9 +14,7 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
   final Function(T) onModelReady;
   final Function(T) onModelEnd;
   final Function(BuildContext, T) fab;
-  final String topButtonRoute;
-  final String topButtonLabel;
-  final IconData topButtonIcon;
+  final List<TopButton<T>> topButtons;
 
   BaseView(
       {GlobalKey<ScaffoldState> scaffoldKey,
@@ -24,9 +22,7 @@ class BaseView<T extends BaseModel> extends StatefulWidget {
       this.onModelReady,
       this.onModelEnd,
       this.fab,
-      this.topButtonRoute,
-      this.topButtonLabel,
-      this.topButtonIcon})
+      this.topButtons})
       : _scaffoldKey = scaffoldKey,
         _builder = builder;
 
@@ -51,13 +47,11 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
               children: [
                 Column(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    getLeftButton(
-                        icon: widget.topButtonIcon,
-                        label: widget.topButtonLabel,
-                        onPressed: () =>
-                            Navigator.pushNamed(context, widget.topButtonRoute)),
-                  ],
+                  children: widget.topButtons.map((topButton) => getLeftButton(
+                      icon: topButton.icon,
+                      label: topButton.label,
+                      onPressed: () => topButton.onPressed(model),
+                  )).toList(),
                 ),
                 Builder(
                   builder: (context) =>
@@ -93,7 +87,7 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
 
   Widget getLeftButton({IconData icon, String label, Function() onPressed}) =>
       Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.only(left: 8, top: 8),
         child: IconButton(
           icon: Icon(
             icon,
@@ -102,4 +96,18 @@ class _BaseViewState<T extends BaseModel> extends State<BaseView<T>>
           onPressed: onPressed,
         ),
       );
+}
+
+class TopButton<T extends BaseModel> {
+  BuildContext context;
+  String label;
+  IconData icon;
+  String route;
+  void Function(T) _onPressed;
+
+  void Function(T) get onPressed => _onPressed ?? (_) =>
+      Navigator.pushNamed(context, route);
+
+  TopButton(this.context, this.label, this.icon, {this.route, void Function(T) onPressed}) : _onPressed = onPressed;
+
 }

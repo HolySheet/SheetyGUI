@@ -19,8 +19,13 @@ import 'package:sheety_gui/services/settings_service.dart';
 class DriveIOService {
   final _conn = locator<JavaConnectorService>();
   final _settings = locator<SettingsService>();
+  List<ListItem> cachedItems;
 
-  Future<List<ListItem>> listFiles({String query = ''}) {
+  Future<List<ListItem>> listFiles({bool cache = true, String query = ''}) {
+    if (cache && cachedItems != null) {
+      return Future.value(cachedItems);
+    }
+
     var completer = Completer<List<ListItem>>();
 
     _conn.sendRequest<ListResponse>(

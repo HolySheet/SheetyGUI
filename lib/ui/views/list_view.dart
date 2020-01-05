@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:angles/angles.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,9 +25,10 @@ class FileListViewState extends State<FileListView>
         .display1
         .copyWith(fontSize: 24);
     return BaseView<ListModel>(
-      topButtonIcon: Icons.settings,
-      topButtonLabel: 'Settings',
-      topButtonRoute: '/settings',
+      topButtons: [
+        TopButton(context, 'Settings', Icons.settings, route: '/settings'),
+        TopButton<ListModel>(context, 'Reload', Icons.refresh, onPressed: (model) => model.refreshFiles())
+      ],
       onModelReady: (model) {
         model.refreshFiles();
       },

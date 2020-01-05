@@ -57,6 +57,9 @@ class ListModel extends BaseModel {
   void refreshFiles() {
     _driveIO.listFiles().then((list) {
       listItems = list;
+
+      selected.clear();
+      startCollapse();
       notifyListeners();
     });
   }

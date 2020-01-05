@@ -18,9 +18,9 @@ class SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return BaseView<SettingsModel>(
-        topButtonIcon: Icons.arrow_back,
-        topButtonLabel: 'Back',
-        topButtonRoute: '/',
+        topButtons: [
+          TopButton(context, 'Back', Icons.arrow_back, route: '/'),
+        ],
         scaffoldKey: GlobalKey<ScaffoldState>(),
         builder: (context, child, model) => Padding(
               padding: EdgeInsets.all(20),
