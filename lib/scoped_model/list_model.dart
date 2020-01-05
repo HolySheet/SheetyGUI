@@ -21,6 +21,7 @@ import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 import 'package:sheety_gui/ui/widgets/file_icon.dart';
 import 'package:sheety_gui/utility.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class ListModel extends BaseModel {
   static const LogicalKeyboardKey keyControl = LogicalKeyboardKey(0x10200000011,
@@ -114,6 +115,7 @@ class ListModel extends BaseModel {
         selected.map((item) => item.id).join(', '),
         !selected.any((item) => !item.selfOwned),
         '',
+        '',
       );
 
   String formatDate(int date) {
@@ -121,6 +123,8 @@ class ListModel extends BaseModel {
     var format = DateFormat.yMd().add_jm();
     return format.format(dateTime);
   }
+
+  void goToLink(String link) => url_launcher.launch(link);
 
   // ANIMATION
 
@@ -382,10 +386,9 @@ class CustomDialog extends PopupRoute {
                 children: [
                   _getButton(
                       icon: Icons.link,
-                      semanticLabel: 'Insert Shared',
-                      onTap: () {
-                        print('Insert');
-                      }),
+                      semanticLabel: 'Clone Shared',
+                      onTap: insert,
+                  ),
                   _getButton(
                     icon: Icons.file_upload,
                     semanticLabel: 'Upload',

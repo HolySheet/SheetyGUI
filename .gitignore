@@ -36,9 +36,13 @@ lib/generated_plugin_registrant.dart
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
-windows
+windows/*
 linux
 macos
+
+!/windows/Runner.sln
+!/windows/FlutterPlugins.props
+!/fde_plugins/url_launcher_fde/*
 
 credentials.json
 private/

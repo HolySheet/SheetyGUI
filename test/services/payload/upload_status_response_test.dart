@@ -21,7 +21,8 @@ final expected = jsonDecode('''
       "date": 123456789,
       "id": "abcdefghijklmnopqrstuvwxyz",
       "selfOwned": false,
-      "owner": "Some Owner"
+      "owner": "Some Owner",
+      "driveLink": "https://drive.google.com/..."
     }
   ]
 }
@@ -45,10 +46,11 @@ void main() {
     expect(first.id, 'abcdefghijklmnopqrstuvwxyz');
     expect(first.selfOwned, false);
     expect(first.owner, 'Some Owner');
+    expect(first.driveLink, 'https://drive.google.com/...');
   });
 
   test('To JSON', () {
-    var payload = UploadStatusResponse('UPLOADING', 0.856, [ListItem('test.txt', 54321, 6, 123456789, 'abcdefghijklmnopqrstuvwxyz', false, 'Some Owner')]);
+    var payload = UploadStatusResponse('UPLOADING', 0.856, [ListItem('test.txt', 54321, 6, 123456789, 'abcdefghijklmnopqrstuvwxyz', false, 'Some Owner', 'https://drive.google.com/...')]);
 
     expect(payload.toJson(), expected);
   });

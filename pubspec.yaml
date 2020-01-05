@@ -29,6 +29,13 @@ dependencies:
   intl: ^0.16.0
   angles: ^1.2.1
   percent_indicator: ^2.1.1+1
+  url_launcher: ^5.4.1
+  url_launcher_fde:
+    path: fde_plugins/url_launcher_fde
+#    git:
+#      url: git://github.com/google/flutter-desktop-embedding.git
+#      path: E:\flutter-desktop-embedding\plugins\flutter_plugins\url_launcher_fde
+#      path: plugins/flutter_plugins/url_launcher_fde
 
 dev_dependencies:
   test: 1.9.4

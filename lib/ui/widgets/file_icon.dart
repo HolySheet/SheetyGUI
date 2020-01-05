@@ -35,6 +35,13 @@ class FileIconState extends State<FileIcon> {
             height: 125,
             child: Stack(
                 children: [
+                  if (!listItem.selfOwned) Padding(
+                    padding: const EdgeInsets.fromLTRB(85, 75, 25, 0),
+                    child: Icon(
+                      Icons.group,
+                      size: 25,
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(25, 15, 25, 0),
                     child: Icon(
