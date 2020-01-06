@@ -65,6 +65,7 @@ class JavaConnectorService {
           '-a',
           'credentials.json',
           '-i',
+          '-x',
         ]);
         process.stdout.transform(utf8.decoder).listen(_processData);
         sendData = (data) => process.stdin.writeln(data);
@@ -82,6 +83,7 @@ class JavaConnectorService {
           '$pid',
           '-a',
           'credentials.json',
+          '-x',
         ]);
         print('Started Java process with PID of: ${process.pid}');
 

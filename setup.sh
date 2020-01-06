@@ -13,7 +13,7 @@ mv flutter-desktop/example/linux linux
 mv flutter-desktop/example/macos macos
 rm -rf flutter-desktop
 
-curl -O $(curl -s https://api.github.com/repos/RubbaBoy/HolySheet/releases/latest \
+curl -L -O $(curl -s https://api.github.com/repos/RubbaBoy/HolySheet/releases/latest \
 | grep "HolySheet.*.jar\"" \
 | cut -d : -f 2,3 \
 | tr -d \" \
