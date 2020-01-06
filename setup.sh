@@ -8,9 +8,9 @@ echo "example/linux/*" >> .git/info/sparse-checkout
 echo "example/macos/*" >> .git/info/sparse-checkout
 git pull origin master
 cd ..
-mv flutter-desktop/example/windows windows
-mv flutter-desktop/example/linux linux
-mv flutter-desktop/example/macos macos
+cp -a -n flutter-desktop/example/windows/. windows
+cp -a -n flutter-desktop/example/linux/. linux
+mv -a -n flutter-desktop/example/macos/. macos
 rm -rf flutter-desktop
 
 curl -L -O $(curl -s https://api.github.com/repos/RubbaBoy/HolySheet/releases/latest \
