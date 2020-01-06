@@ -267,7 +267,6 @@ class ListModel extends BaseModel {
       Navigator.of(context).pop();
       _selection.sendRequest(
           multi: true,
-          initialDirectory: r'E:\\DriveStore\\upload', // TODO: Temporary
           selected: (files) {
             if (files.isEmpty) {
               return;
