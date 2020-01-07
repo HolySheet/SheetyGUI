@@ -319,7 +319,7 @@ class ListModel extends BaseModel {
 
         final idPathMap = Map<String, String>.fromIterable(selected,
             key: (item) => item.id,
-            value: (item) => '${Setting.downloadDirectory.value}/${item.name}');
+            value: (item) => '${Setting.downloadDirectory.value.path}/${item.name}');
 
         _driveIO.downloadFiles(idPathMap,
             startDownload: (id) =>
