@@ -1,6 +1,15 @@
-# SheetyGUI
+<h1 align="center">SheetyGUI</h1>
+<p align="center"><i>Store any file, of any size to Google Sheets</i></p>
+<hr><p align="center">
+  <a href="http://hits.dwyl.io/RubbaBoy/HolySheet"><img alt="HitCount" src="http://hits.dwyl.io/RubbaBoy/https://wakatime.com/badge/github/RubbaBoy/SheetyGUI.svg.svg" /></a>
+  <img alt="Stars" src="https://img.shields.io/github/stars/RubbaBoy/SheetyGUI.svg?label=Stars&style=flat" />
+  <a href="https://wakatime.com/badge/github/RubbaBoy/SheetyGUI"><img alt="Time Tracker" src="https://wakatime.com/badge/github/RubbaBoy/SheetyGUI.svg"/></a>
+  <a href="https://github.com/RubbaBoy/SheetyGUI/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/RubbaBoy/SheetyGUI.svg"/></a>
+  <a href="https://github.com/RubbaBoy/SheetyGUI/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/RubbaBoy/SheetyGUI"></a>
+  <a href="https://github.com/RubbaBoy/SheetyGUI/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/RubbaBoy/SheetyGUI.svg" alt="License"/></a>
+</p>
 
-SheetyGUI is a desktop application for HolySheet, a program to store arbitrary files to Google Sheets. This is made in Flutter, and is interfaced to the Java program via sockets.
+SheetyGUI is a desktop application for [HolySheet](https://github.com/RubbaBoy/HolySheet), a program to store arbitrary files to Google Sheets. This is made in Flutter, and is interfaced to the Java program via sockets.
 
 ## Installation
 
