@@ -22,6 +22,8 @@ SheetyGUI uses Flutter Desktop Embedding, which is currently not labeled as prod
 
 ### Demo Video
 
+The following is a video of the Installation and usage of SheetyGUI. For just a usage demo, skip to [2:06](https://youtu.be/W3wyBj26rsg?t=126)
+
 [![HolySheet Installation/Demo](screenshots/Thumbnail.png)](https://youtu.be/W3wyBj26rsg)
 
 https://youtu.be/W3wyBj26rsg
