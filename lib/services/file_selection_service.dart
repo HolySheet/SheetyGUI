@@ -1,15 +1,17 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:sheety_gui/generated/holysheet_service.pb.dart';
 import 'package:sheety_gui/service_locator.dart';
+import 'package:sheety_gui/services/grpc_client_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
-import 'package:sheety_gui/services/payload/code_execution_request.dart';
 import 'package:uuid/uuid.dart';
 
 final Uuid _uuid = Uuid();
 
 class FileSelectionService {
-  final _conn = locator<JavaConnectorService>();
+  final _conn = locator<GRPCClientService>();
 
   void sendRequest(
       {@required Function(List<File>) selected,
@@ -25,8 +27,18 @@ class FileSelectionService {
 
     var selectedUuid = _uuid.v4();
     var cancelUuid = _uuid.v4();
-    _conn.sendRequest(
-        payload: CodeExecutionRequest("""
+
+    _conn
+      ..addCallbacks({
+        selectedUuid: (response) => selected(
+            List<String>.from(jsonDecode(response.variables.first.object))
+                .map((path) => File(path))
+                .toList()),
+        cancelUuid: (response) => cancelled?.call()
+      })
+      ..client
+          .executeCode(CodeExecutionRequest()
+            ..code = """
       CompletableFuture.runAsync(() -> {
           try {
               UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -47,19 +59,11 @@ class FileSelectionService {
               // callback $cancelUuid
           }
       });
-      """),
-        response: (_) => print('Opened file picker'),
-        error: (e) {
-          print('Error:\n${e.message}\n${e.stacktrace}');
-          cancelled?.call();
-        },
-        callback: {
-          selectedUuid: (response) => selected(
-              List<String>.from(response.variables.first.object)
-                  .map((path) => File(path))
-                  .toList()),
-          cancelUuid: (response) => cancelled?.call()
-        });
+      """)
+          .then((_) => print('Opened file picker'), onError: (e) {
+        print('Error:\n${e.message}\n${e.stacktrace}');
+        cancelled?.call();
+      });
   }
 }
 
@@ -73,7 +77,7 @@ class SelectionMode {
 }
 
 enum FileSelection {
-  files,       // JFileChooser.FILES_ONLY = 0
+  files, // JFileChooser.FILES_ONLY = 0
   directories, // JFileChooser.DIRECTORIES_ONLY = 1
-  all,         // JFileChooser.FILES_AND_DIRECTORIES = 2
+  all, // JFileChooser.FILES_AND_DIRECTORIES = 2
 }

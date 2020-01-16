@@ -13,7 +13,6 @@ import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/drive_io_service.dart';
 import 'package:sheety_gui/services/file_selection_service.dart';
-import 'package:sheety_gui/services/payload/list_item.dart';
 import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/utility.dart';
 

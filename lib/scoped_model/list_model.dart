@@ -10,13 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:sheety_gui/generated/holysheet_service.pb.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/drive_io_service.dart';
 import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
-import 'package:sheety_gui/services/payload/list_item.dart';
-import 'package:sheety_gui/services/payload/list_response.dart';
 import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 import 'package:sheety_gui/ui/widgets/file_icon.dart';
@@ -132,7 +131,8 @@ class ListModel extends BaseModel {
     if (now - _lastSearch >= 500) {
       _lastSearch = now;
       refreshFiles(query: searchController.text);
-      Timer(Duration(milliseconds: 100), () => FocusScope.of(context).requestFocus(searchFocus));
+      Timer(Duration(milliseconds: 100),
+          () => FocusScope.of(context).requestFocus(searchFocus));
     }
   }
 
@@ -142,16 +142,15 @@ class ListModel extends BaseModel {
     notifyListeners();
   }
 
-  ListItem getCombined() => ListItem(
-        '${selected.length} Selected',
-        selected.sumMap((item) => item.size),
-        selected.sumMap((item) => item.sheets),
-        selected[0].date,
-        selected.map((item) => item.id).join(', '),
-        !selected.any((item) => !item.selfOwned),
-        '',
-        '',
-      );
+  ListItem getCombined() => ListItem()
+    ..name = '${selected.length} Selected'
+    ..size = selected.sumMap((item) => item.size)
+    ..sheets = selected.sumMap((item) => item.sheets)
+    ..date = selected[0].date
+    ..id = selected.map((item) => item.id).join(', ')
+    ..selfOwned = !selected.any((item) => !item.selfOwned)
+    ..owner = ''
+    ..driveLink = '';
 
   String formatDate(int date) {
     var dateTime = DateTime.fromMillisecondsSinceEpoch(date);
@@ -252,10 +251,9 @@ class ListModel extends BaseModel {
             statusCallback: (progress, response) {
               updatePercent(progress);
 
-              if (response.status == 'COMPLETE') {
-                print(
-                    'Request complete, adding ${response.items.length} file(s)');
-                listItems.addAll(response.items);
+              if (response.status == UploadResponse_UploadStatus.COMPLETE) {
+                print('Request complete, adding file');
+                listItems.add(response.item);
                 notifyListeners();
               }
             },
@@ -285,10 +283,9 @@ class ListModel extends BaseModel {
               statusCallback: (index, progress, response) {
                 updatePercent(progress);
 
-                if (response.status == 'COMPLETE') {
-                  print(
-                      'Request complete, adding ${response.items.length} file(s)');
-                  listItems.addAll(response.items);
+                if (response.status == UploadResponse_UploadStatus.COMPLETE) {
+                  print('Request complete, adding file');
+                  listItems.add(response.item);
                   notifyListeners();
                 }
               },
@@ -319,7 +316,8 @@ class ListModel extends BaseModel {
 
         final idPathMap = Map<String, String>.fromIterable(selected,
             key: (item) => item.id,
-            value: (item) => '${Setting.downloadDirectory.value.path}/${item.name}');
+            value: (item) =>
+                '${Setting.downloadDirectory.value.path}/${item.name}');
 
         _driveIO.downloadFiles(idPathMap,
             startDownload: (id) =>
@@ -351,20 +349,21 @@ class ListModel extends BaseModel {
         var idNameMap = Map<String, ListItem>.fromIterable(selected,
             key: (item) => item.id);
 
-        _driveIO.removeFiles(idNameMap.keys.toList(), startRemove: (id) {
-          updateText('Removing ${idNameMap[id].name}');
-        }, statusCallback: (index, progress, response) {
-          updatePercent(progress);
+        _driveIO.removeFiles(idNameMap.keys.toList(),
+            startRemove: (id) => updateText('Removing ${idNameMap[id].name}'),
+            statusCallback: (index, progress, response) {
+              updatePercent(progress);
 
-          if (response.status == 'COMPLETE') {
-            listItems.remove(selected[index]);
-            selected.remove(selected[index]);
-            notifyListeners();
-          }
-        }, completeRemove: () {
-          startCollapse();
-          hideLoading(true);
-        });
+              if (response.status == RemoveResponse_RemoveStatus.COMPLETE) {
+                listItems.remove(selected[index]);
+                selected.remove(selected[index]);
+                notifyListeners();
+              }
+            },
+            completeRemove: () {
+              startCollapse();
+              hideLoading(true);
+            });
       },
       title: 'Confirm Remove',
       body:

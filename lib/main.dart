@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
 import 'package:sheety_gui/service_locator.dart';
+import 'package:sheety_gui/services/grpc_client_service.dart';
 import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/ui/views/list_view.dart';
@@ -20,7 +21,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   final settingsService = locator<SettingsService>();
-  final connectorService = locator<JavaConnectorService>();
+  final clientService = locator<GRPCClientService>();
 
   final _memoizer = AsyncMemoizer<dynamic>();
 
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => FutureBuilder(
           future: _memoizer.runOnce(() => settingsService
               .init()
-              .then((_) => connectorService.connect())),
+              .then((_) => clientService.start())),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.none:

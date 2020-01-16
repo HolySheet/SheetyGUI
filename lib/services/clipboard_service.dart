@@ -1,23 +1,15 @@
 import 'dart:async';
 
+import 'package:sheety_gui/generated/holysheet_service.pb.dart';
 import 'package:sheety_gui/service_locator.dart';
-import 'package:sheety_gui/services/java_connector_service.dart';
-import 'package:sheety_gui/services/payload/code_execution_request.dart';
-import 'package:sheety_gui/services/payload/code_execution_response.dart';
+import 'package:sheety_gui/services/grpc_client_service.dart';
 
 class ClipboardService {
-  final _conn = locator<JavaConnectorService>();
+  final _conn = locator<GRPCClientService>();
 
-  Future<String> getClipboard() {
-    final completer = Completer<String>();
-
-    _conn.sendRequest(
-      payload: CodeExecutionRequest(
-          'Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);'),
-      response: (CodeExecutionResponse response) => completer.complete(response.variables.first.object),
-      error: completer.completeError,
-    );
-
-    return completer.future;
-  }
+  Future<String> getClipboard() => _conn.client
+      .executeCode(CodeExecutionRequest()
+        ..code =
+            'Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);')
+      .then((response) => response.variables.first.object);
 }
