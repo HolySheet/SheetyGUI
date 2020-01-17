@@ -35,6 +35,7 @@ dependencies:
   grpc: ^2.1.3
   protobuf: any
   protoc_plugin: any
+  fixnum: ^0.10.11
 
 # protoc --dart_out=grpc:lib/generated -Iprotos protos/holysheet_service.proto
 

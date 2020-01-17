@@ -11,16 +11,15 @@ class GRPCClientService {
   /// Starts the gRPC server with the given port.
   Future<void> start([int port = 8080]) async {
     channel = ClientChannel('localhost',
-        port: 8080,
+        port: port,
         options:
         const ChannelOptions(credentials: ChannelCredentials.insecure()));
     client = HolySheetServiceClient(channel,
-        options: CallOptions(timeout: Duration(seconds: 30)));
+        options: CallOptions(timeout: Duration(hours: 100000)));
 
     client.listenCallbacks(ListenCallbacksRequest()).listen((data) {
-      print('Received callback! $data');
-      if (callbacks[data.callbackState]?.call(data) ?? false) {
-        print('Removing callback!');
+      print('callbackj!!!!! $data');
+      if (callbacks[data.callbackState]?.call(data) ?? true) {
         removeCallback(data.callbackState);
       }
     });
@@ -35,7 +34,7 @@ class GRPCClientService {
 
   /// Adds multiple callbacks.
   /// See [addCallback]
-  void addCallbacks(Map<String, bool Function(CodeExecutionCallbackResponse)> callbacks) => callbacks.addAll(callbacks);
+  void addCallbacks(Map<String, bool Function(CodeExecutionCallbackResponse)> callbacks) => this.callbacks.addAll(callbacks);
 
   /// Removes a callback manually with the given UUID.
   void removeCallback(String uuid) => callbacks.remove(uuid);

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:filesize/filesize.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -144,7 +145,7 @@ class ListModel extends BaseModel {
 
   ListItem getCombined() => ListItem()
     ..name = '${selected.length} Selected'
-    ..size = selected.sumMap((item) => item.size)
+    ..size = Int64(selected.sumMap((item) => item.size.toInt()))
     ..sheets = selected.sumMap((item) => item.sheets)
     ..date = selected[0].date
     ..id = selected.map((item) => item.id).join(', ')
@@ -266,6 +267,8 @@ class ListModel extends BaseModel {
       _selection.sendRequest(
           multi: true,
           selected: (files) {
+            print('filezxz: $files');
+
             if (files.isEmpty) {
               return;
             }

@@ -53,63 +53,71 @@ class FileListViewState extends State<FileListView>
                 padding: model.showSidebar
                     ? const EdgeInsets.only(left: 100, right: 50)
                     : const EdgeInsets.symmetric(horizontal: 100),
-                child: Column(
+                child: ListView(
+                  shrinkWrap: false,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 15, bottom: 10),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Card(
-                          color: Theme.of(context).cardColor,
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.search),
-                                onPressed: () => model.submitSearch(context),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15),
-                                  child: TextField(
-                                    focusNode: model.searchFocus,
-                                    controller: model.searchController,
-                                    onSubmitted: (_) => () => model.submitSearch(context),
-                                    decoration: InputDecoration(
-                                      hintText: 'Search files',
-                                      border: InputBorder.none,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15, bottom: 10),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Card(
+                              color: Theme.of(context).cardColor,
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.search),
+                                    onPressed: () =>
+                                        model.submitSearch(context),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 15),
+                                      child: TextField(
+                                        focusNode: model.searchFocus,
+                                        controller: model.searchController,
+                                        onSubmitted: (_) =>
+                                            () => model.submitSearch(context),
+                                        decoration: InputDecoration(
+                                          hintText: 'Search files',
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                  Tooltip(
+                                    message: model.displayShared
+                                        ? 'Showing shared'
+                                        : 'Hiding shared',
+                                    child: IconButton(
+                                      icon: Icon(model.displayShared
+                                          ? Icons.link
+                                          : Icons.link_off),
+                                      onPressed: model.toggleShared,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Tooltip(
-                                message: model.displayShared
-                                    ? 'Showing shared'
-                                    : 'Hiding shared',
-                                child: IconButton(
-                                  icon: Icon(model.displayShared
-                                      ? Icons.link
-                                      : Icons.link_off),
-                                  onPressed: model.toggleShared,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Wrap(
-                        children: model.listItems
-                            .map((item) => FileIcon(
-                                  key: UniqueKey(),
-                                  selected: model.selected.contains(item),
-                                  listItem: item,
-                                  onTap: model.tapFile,
-                                ))
-                            .toList(),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Wrap(
+                            children: model.listItems
+                                .map((item) => FileIcon(
+                                      key: UniqueKey(),
+                                      selected: model.selected.contains(item),
+                                      listItem: item,
+                                      onTap: model.tapFile,
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -143,12 +151,12 @@ class FileListViewState extends State<FileListView>
                             child: Text(model.showingSelected.name ?? '',
                                 style: fileTitleDisplay),
                           ),
-                          lineText(filesize(model.showingSelected.size ?? 0),
+                          lineText(filesize(model.showingSelected.size?.toInt() ?? 0),
                               topPadding: 20),
                           lineText(
                               '${model.showingSelected.sheets ?? ''} Sheet${model.showingSelected.sheets != 1 ? 's' : ''}'),
                           lineText(
-                              'Last Modified: ${model.formatDate(model.showingSelected.date ?? 0)}'),
+                              'Last Modified: ${model.formatDate(model.showingSelected.date?.toInt() ?? 0)}'),
                           if (model.selected.length == 1)
                             lineText('Ownership',
                                 style: Theme.of(context).textTheme.body2),

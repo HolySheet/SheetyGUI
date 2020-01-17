@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart';
 import 'package:grpc/grpc.dart';
 import 'package:sheety_gui/generated/holysheet_service.pb.dart';
@@ -39,7 +40,7 @@ class DriveIOService {
         sendRequest: (file) => _conn.client.uploadFile(UploadRequest()
           ..upload = _settings[Setting.upload]
           ..compression = _settings[Setting.compression]
-          ..sheetSize = _settings[Setting.sheetSize]
+          ..sheetSize = Int64(_settings[Setting.sheetSize])
           ..file = file),
         statusCallback: statusCallback,
         startAction: startUpload,
@@ -100,7 +101,7 @@ class DriveIOService {
         sendRequest: (_) => _conn.client.uploadFile(UploadRequest()
           ..upload = _settings[Setting.upload]
           ..compression = _settings[Setting.compression]
-          ..sheetSize = _settings[Setting.sheetSize]
+          ..sheetSize = Int64(_settings[Setting.sheetSize])
           ..id = id),
         statusCallback: (_, progress, response) =>
             statusCallback(progress, response),

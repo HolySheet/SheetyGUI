@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:grpc/grpc.dart';
 import 'package:sheety_gui/generated/holysheet_service.pb.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/grpc_client_service.dart';
@@ -29,11 +30,16 @@ class FileSelectionService {
     var cancelUuid = _uuid.v4();
 
     _conn
-      ..addCallbacks({
-        selectedUuid: (response) => selected(
-            List<String>.from(jsonDecode(response.variables.first.object))
-                .map((path) => File(path))
-                .toList()),
+      ..addCallbacks({ // E:\RubbaBot2
+        selectedUuid: (response) {
+          print('got response!');
+          var sel = List<String>.from(jsonDecode(response.variables.first.object))
+              .map((path) => File(path))
+              .toList();
+          print('sel = $sel');
+          selected(sel);
+          return true;
+        },
         cancelUuid: (response) => cancelled?.call()
       })
       ..client
@@ -61,7 +67,7 @@ class FileSelectionService {
       });
       """)
           .then((_) => print('Opened file picker'), onError: (e) {
-        print('Error:\n${e.message}\n${e.stacktrace}');
+        print('Error: $e');
         cancelled?.call();
       });
   }

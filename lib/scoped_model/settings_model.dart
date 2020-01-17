@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:protobuf/protobuf.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/drive_io_service.dart';
@@ -30,7 +31,7 @@ class SettingsModel extends BaseModel {
     notifyListeners();
   }
 
-  void changeDropdown(Setting<String> setting, String value) {
+  void changeDropdown(Setting<ProtobufEnum> setting, ProtobufEnum value) {
     _settings.setSetting(setting, value);
     notifyListeners();
   }

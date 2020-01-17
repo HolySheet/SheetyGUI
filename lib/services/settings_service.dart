@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:protobuf/protobuf.dart';
+import 'package:sheety_gui/generated/holysheet_service.pb.dart';
 import 'package:sheety_gui/utility.dart';
 
 class SettingsService {
@@ -48,14 +50,11 @@ class Setting<T> {
   static final Setting<File> downloadDirectory = Setting(
       'downloadDirectory', File('${SettingsService.userHome}\\Downloads'));
 
-  static final Setting<String> backendConnect =
-      Setting('backendConnect', BackendConnect.ioStream, BackendConnect.values);
+  static final Setting<UploadRequest_Compression> compression =
+      Setting('compression', UploadRequest_Compression.ZIP, UploadRequest_Compression.values);
 
-  static final Setting<String> compression =
-      Setting('compression', Compression.zip, Compression.values);
-
-  static final Setting<String> upload =
-      Setting('upload', Upload.multipart, Upload.values);
+  static final Setting<UploadRequest_Upload> upload =
+      Setting('upload', UploadRequest_Upload.MULTIPART, UploadRequest_Upload.values);
 
   static final Setting<int> sheetSize = Setting('sheetSize', 10000000); // 10MB
 
@@ -101,6 +100,8 @@ class Setting<T> {
       return setting.value;
     } else if (setting is Setting<int>) {
       return setting.value;
+    } else if (setting is Setting<ProtobufEnum>) {
+      return setting.value.value; // Gets ordinal of enum
     } else {
       print('Don\'t know what to do with: $setting');
       return null;
@@ -120,6 +121,8 @@ class Setting<T> {
       setting.value = value;
     } else if (setting is Setting<int>) {
       setting.value = value;
+    } else if (setting is Setting<ProtobufEnum>) {
+      setting.value = setting.allowed[value]; // From ordinal of enum
     } else {
       print('Unknown setting type: $setting');
     }
@@ -129,25 +132,4 @@ class Setting<T> {
   String toString() {
     return 'Setting{name: $name, def: $def}';
   }
-}
-
-class Compression {
-  static const String none = 'none';
-  static const String zip = 'zip'; // default
-
-  static const List<String> values = [none, zip];
-}
-
-class Upload {
-  static const String multipart = 'multipart'; // default
-  static const String direct = 'direct';
-
-  static const List<String> values = [multipart, direct];
-}
-
-class BackendConnect {
-  static const String ioStream = 'ioStream'; // default
-  static const String socket = 'socket';
-
-  static const List<String> values = [ioStream, socket];
 }

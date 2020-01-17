@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sheety_gui/scoped_model/list_model.dart';
+import 'package:protobuf/protobuf.dart';
 import 'package:sheety_gui/scoped_model/settings_model.dart';
 import 'package:sheety_gui/services/settings_service.dart';
 import 'package:sheety_gui/ui/views/base_view.dart';
@@ -31,8 +31,6 @@ class SettingsViewState extends State<SettingsView> {
                   SizedBox(height: 10),
                   getFileOption(
                       model, 'Download Directory', Setting.downloadDirectory),
-                  getMultiOption(
-                      model, 'Backend Connect', Setting.backendConnect),
                   getMultiOption(model, 'Compression', Setting.compression),
                   getMultiOption(model, 'Upload Type', Setting.upload),
                   getMegabyteOption(model, 'Sheet Size', Setting.sheetSize),
@@ -59,22 +57,22 @@ class SettingsViewState extends State<SettingsView> {
       );
 
   Widget getMultiOption(
-          SettingsModel model, String text, Setting<String> setting) =>
+          SettingsModel model, String text, Setting<ProtobufEnum> setting) =>
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text(text),
           SizedBox(width: 30),
-          DropdownButton<String>(
+          DropdownButton<ProtobufEnum>(
             value: model.getSetting(setting),
             underline: Container(
               height: 2,
               color: Color(0xFFC1C1C1),
             ),
             items: setting.allowed
-                .map((value) => DropdownMenuItem<String>(
+                .map((value) => DropdownMenuItem<ProtobufEnum>(
                       value: value,
-                      child: Text(value),
+                      child: Text(camelCase(value.name)),
                     ))
                 .toList(),
             onChanged: (value) => model.changeDropdown(setting, value),
@@ -120,4 +118,11 @@ class SettingsViewState extends State<SettingsView> {
           ),
         ],
       );
+
+  String camelCase(String input) {
+    var split = input.toLowerCase().split('_');
+    var first = split.first;
+    split[0] = '${first.substring(0, 1).toUpperCase()}${first.substring(1, first.length)}';
+    return split.join(' ');
+  }
 }
