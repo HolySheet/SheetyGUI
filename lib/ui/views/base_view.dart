@@ -2,10 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
-import 'package:sheety_gui/scoped_model/settings_model.dart';
 import 'package:sheety_gui/service_locator.dart';
-import 'package:sheety_gui/ui/views/list_view.dart';
-import 'package:sheety_gui/ui/views/settings_view.dart';
 import 'package:sheety_gui/ui/widgets/bottom_status.dart';
 
 class BaseView<T extends BaseModel> extends StatefulWidget {

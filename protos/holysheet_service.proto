@@ -6,12 +6,15 @@ package com.uddernetworks.grpc;
 message ListItem {
     string name = 1;
     string id = 2;
-    int32 sheets = 3;
-    int64 size = 4;
-    int64 date = 5;
-    bool selfOwned = 6;
-    string owner = 7;
-    string driveLink = 8;
+    string path = 3;
+    int32 sheets = 5;
+    int64 size = 6;
+    int64 date = 7;
+    bool selfOwned = 8;
+    string owner = 9;
+    string driveLink = 10;
+    bool starred = 11;
+    bool trashed = 12;
 }
 
 // Used in code execution, to hold data of a variable
@@ -23,19 +26,29 @@ message SerializedVariable {
 
 
 message ListRequest {
-    string path = 1; // The remote drive path to list
+    string token = 1; // The Google authentication token
+    string path = 2; // The remote drive path to list
+    bool starred = 3; // Show starred files (true) or all files (false)
+    bool trashed = 4; // If it should be listing trashed files
 }
 
 message ListResponse {
     repeated ListItem items = 1; // A list of items retrieved
+    repeated string folders = 2; // A list of all folders present
 }
 
 message UploadRequest {
-    string file = 1; // The file path, if uploading
-    string id = 2; // The file ID, if cloning
-    Upload upload = 3; // The upload type
-    Compression compression = 4; // The compression setting
-    int64 sheetSize = 5; // The maximum size (in bytes) each sheet can be
+    string token = 1; // The Google authentication token
+    string path = 2; // The absolute Google Drive path of the upload
+    string name = 3; // The name of the file, to not rely on path name
+    string id = 4; // The file ID, if cloning
+    Upload upload = 5; // The upload type
+    Compression compression = 6; // The compression setting
+    int64 sheetSize = 7; // The maximum size (in bytes) each sheet can be
+    int64 fileSize = 8;
+    string processingId = 9; // The untrimmed unique processing UUID
+    string localPath = 10; // Instead of creating a processor and accepting chunks via gRPC, it uploads this absolute
+    // file path in chunks. This is should only be used for local uploads, and is normally null.
 
     enum Upload {
         MULTIPART = 0;
@@ -49,25 +62,51 @@ message UploadRequest {
 }
 
 message UploadResponse {
-    UploadStatus status = 1; // The upload status
-    double percentage = 2; // The 0-1 percentage of the upload
-    ListItem item = 3; // The new ListItem uploaded. This populated if the status is COMPLETE.
+    UploadStatus uploadStatus = 1;
+    ListItem item = 2; // The new ListItem uploaded. This populated if the status is COMPLETE.
 
     enum UploadStatus {
-        PENDING = 0;
-        UPLOADING = 1;
-        COMPLETE = 2;
+        READY = 0;
+        COMPLETE = 1;
     }
 }
 
+message FileChunk {
+    string processingId = 1; // The untrimmed processing UUID of the upload. No authentication is needed due to this
+    // always being abstracted by something like a webserver.
+
+    bytes content = 2; // The file content. May be empty if the status is ChunkStatus.Terminated
+    ChunkStatus status = 3; // The status of the transfer
+
+    enum ChunkStatus {
+        Normal = 0;
+        Complete = 1;
+        Terminated = 2;
+    }
+}
+
+message ChunkResponse {
+    int64 currentBuffer = 1; // The amount of bytes not processed yet in the current buffer
+}
+
+message CreateFolderRequest {
+    string token = 1; // The Google authentication token
+    string path = 2; // The total path to create, creating any parents as necessary.
+}
+
+message FolderResponse {
+}
+
 message DownloadRequest {
-    string id = 1; // The Sheets-generated ID of the file to download
-    string path = 2; // The local file path to save the file to
+    string token = 1; // The Google authentication token
+    string id = 2; // The Sheets-generated ID of the file to download
+    string path = 3; // The local file path to save the file to
 }
 
 message DownloadResponse {
     DownloadStatus status = 1; // The download status
     double percentage = 2; // The 0-1 percentage of the download
+    ListItem item = 3; // The file uploaded. Only not-null when status is COMPLETE
 
     enum DownloadStatus {
         PENDING = 0;
@@ -77,40 +116,47 @@ message DownloadResponse {
 }
 
 message RemoveRequest {
-    string id = 1; // The Sheets-generated ID of the file to remove
+    string token = 1; // The Google authentication token
+    string id = 2; // The Sheets-generated ID of the file to remove
+    bool permanent = 3; // If the deletion should skip the trash
 }
 
 message RemoveResponse {
-    RemoveStatus status = 1; // The removal status
-    double percentage = 2; // The 0-1 percentage of the removal
-
-    enum RemoveStatus {
-        PENDING = 0;
-        REMOVING = 1;
-        COMPLETE = 2;
-    }
 }
 
-message CodeExecutionRequest {
-
-    string code = 1; // A snippet of Java code, exactly one complete snippet of source code, that is, one expression,
-    // statement, variable declaration, method declaration, class declaration, or import. - JShell. Invoked on the server
-
-    repeated string returnVariables = 2; // A list of extra variables to return in the response
+message RestoreRequest {
+    string token = 1; // The Google authentication token
+    string id = 2; // The Sheets-generated ID of the file to remove
 }
 
-message CodeExecutionResponse {
-    repeated string snippetResult = 2; // A list of implicit or explicitly created variables in the snippet
-    repeated SerializedVariable variables = 3; // A list of variables listed in the request via returnVariables, and in this response via snippetResult
+message RestoreResponse {
 }
 
-message CodeExecutionCallbackResponse {
-    string callbackState = 1; // An untrimmed UUID (Set in the code) to identify the callback
-    repeated string snippetResult = 2; // A list of variable names passed to the callback, sent by the client
-    repeated SerializedVariable variables = 3; // A list of all variables listed in the snippetResult
+message StarRequest {
+    string token = 1; // The Google authentication token
+    string id = 2; // The Sheets-generated ID of the file to download
+    bool starred = 3; // If the file should be starred
 }
 
-message ListenCallbacksRequest {
+message StarResponse {
+}
+
+message MoveFileRequest {
+    string token = 1; // The Google authentication token
+    string id = 2; // The Sheets-generated ID of the file to download
+    string path = 3; // The path to move the file to. This path will be the PARENT of the file
+}
+
+message MoveFileResponse {
+}
+
+message RenameRequest {
+    string token = 1; // The Google authentication token
+    string id = 2; // The Sheets-generated ID of the file to download
+    string name = 3; // The new name of the file
+}
+
+message RenameResponse {
 }
 
 service HolySheetService {
@@ -118,18 +164,31 @@ service HolySheetService {
     // Lists files with an optional path
     rpc listFiles(ListRequest) returns (ListResponse);
 
-    // Uploads a file
+    // Starts the upload of a file. This essentially creates a virtual "processor" as the given processing ID, and as
+    // "FileChunk"s (via sendFile()) come in, the data is processed and uploaded accordingly to avoid any file IO server-side.
+    // A response is sent when the sendFile() method is complete.
     rpc uploadFile(UploadRequest) returns (stream UploadResponse);
+
+    rpc createFolder(CreateFolderRequest) returns (FolderResponse);
+
+    // Sends a file data stream to be processed to avoid filesystem IO
+    rpc sendFile(stream FileChunk) returns (stream ChunkResponse);
 
     // Downloads a remote file
     rpc downloadFile(DownloadRequest) returns (stream DownloadResponse);
 
     // Removes a remote file
-    rpc removeFile(RemoveRequest) returns (stream RemoveResponse);
+    rpc removeFile(RemoveRequest) returns (RemoveResponse);
 
-    // Executes Java code on the server
-    rpc executeCode(CodeExecutionRequest) returns (CodeExecutionResponse);
+    // Restores a trashed file
+    rpc restoreFile(RestoreRequest) returns (RestoreResponse);
 
-    // Should only be invoked once. Streams back all callbacks
-    rpc listenCallbacks(ListenCallbacksRequest) returns (stream CodeExecutionCallbackResponse);
+    // Star a given file
+    rpc starRequest(StarRequest) returns (StarResponse);
+
+    // Moves a file from one path to another
+    rpc moveFile(MoveFileRequest) returns (MoveFileResponse);
+
+    // Renames a given file to a new name
+    rpc renameFile(RenameRequest) returns (RenameResponse);
 }

@@ -1,21 +1,13 @@
-import 'dart:async';
 import 'dart:io';
-import 'dart:math';
-import 'dart:ui';
 
-import 'package:filesize/filesize.dart';
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart';
 import 'package:protobuf/protobuf.dart';
+import 'package:sheety_gui/generated/sheety_gui_service.pb.dart';
 import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
-import 'package:sheety_gui/services/drive_io_service.dart';
 import 'package:sheety_gui/services/file_selection_service.dart';
 import 'package:sheety_gui/services/settings_service.dart';
-import 'package:sheety_gui/utility.dart';
 
 class SettingsModel extends BaseModel {
   static const int MB = 1000000;
@@ -48,8 +40,8 @@ class SettingsModel extends BaseModel {
     _selection.sendRequest(
         title: 'Select downloads directory',
         initialDirectory: getSetting(setting)?.path ?? '',
-        selectionMode: FileSelection.directories,
-        selected: (file) {
+        selectionMode: SelectorRequest_FileSelection.Directories,
+        onSelect: (file) {
           var first = file.first;
           getFileInputController(setting).text = first.path;
           _settings.setSetting(setting, first);

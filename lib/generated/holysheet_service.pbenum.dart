@@ -40,13 +40,11 @@ class UploadRequest_Compression extends $pb.ProtobufEnum {
 }
 
 class UploadResponse_UploadStatus extends $pb.ProtobufEnum {
-  static const UploadResponse_UploadStatus PENDING = UploadResponse_UploadStatus._(0, 'PENDING');
-  static const UploadResponse_UploadStatus UPLOADING = UploadResponse_UploadStatus._(1, 'UPLOADING');
-  static const UploadResponse_UploadStatus COMPLETE = UploadResponse_UploadStatus._(2, 'COMPLETE');
+  static const UploadResponse_UploadStatus READY = UploadResponse_UploadStatus._(0, 'READY');
+  static const UploadResponse_UploadStatus COMPLETE = UploadResponse_UploadStatus._(1, 'COMPLETE');
 
   static const $core.List<UploadResponse_UploadStatus> values = <UploadResponse_UploadStatus> [
-    PENDING,
-    UPLOADING,
+    READY,
     COMPLETE,
   ];
 
@@ -54,6 +52,23 @@ class UploadResponse_UploadStatus extends $pb.ProtobufEnum {
   static UploadResponse_UploadStatus valueOf($core.int value) => _byValue[value];
 
   const UploadResponse_UploadStatus._($core.int v, $core.String n) : super(v, n);
+}
+
+class FileChunk_ChunkStatus extends $pb.ProtobufEnum {
+  static const FileChunk_ChunkStatus Normal = FileChunk_ChunkStatus._(0, 'Normal');
+  static const FileChunk_ChunkStatus Complete = FileChunk_ChunkStatus._(1, 'Complete');
+  static const FileChunk_ChunkStatus Terminated = FileChunk_ChunkStatus._(2, 'Terminated');
+
+  static const $core.List<FileChunk_ChunkStatus> values = <FileChunk_ChunkStatus> [
+    Normal,
+    Complete,
+    Terminated,
+  ];
+
+  static final $core.Map<$core.int, FileChunk_ChunkStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static FileChunk_ChunkStatus valueOf($core.int value) => _byValue[value];
+
+  const FileChunk_ChunkStatus._($core.int v, $core.String n) : super(v, n);
 }
 
 class DownloadResponse_DownloadStatus extends $pb.ProtobufEnum {
@@ -71,22 +86,5 @@ class DownloadResponse_DownloadStatus extends $pb.ProtobufEnum {
   static DownloadResponse_DownloadStatus valueOf($core.int value) => _byValue[value];
 
   const DownloadResponse_DownloadStatus._($core.int v, $core.String n) : super(v, n);
-}
-
-class RemoveResponse_RemoveStatus extends $pb.ProtobufEnum {
-  static const RemoveResponse_RemoveStatus PENDING = RemoveResponse_RemoveStatus._(0, 'PENDING');
-  static const RemoveResponse_RemoveStatus REMOVING = RemoveResponse_RemoveStatus._(1, 'REMOVING');
-  static const RemoveResponse_RemoveStatus COMPLETE = RemoveResponse_RemoveStatus._(2, 'COMPLETE');
-
-  static const $core.List<RemoveResponse_RemoveStatus> values = <RemoveResponse_RemoveStatus> [
-    PENDING,
-    REMOVING,
-    COMPLETE,
-  ];
-
-  static final $core.Map<$core.int, RemoveResponse_RemoveStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static RemoveResponse_RemoveStatus valueOf($core.int value) => _byValue[value];
-
-  const RemoveResponse_RemoveStatus._($core.int v, $core.String n) : super(v, n);
 }
 

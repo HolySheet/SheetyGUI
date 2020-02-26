@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:async/async.dart';
 import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
@@ -22,6 +20,7 @@ void main() {
 class MyApp extends StatelessWidget {
   final settingsService = locator<SettingsService>();
   final clientService = locator<GRPCClientService>();
+  final javaConnectorService = locator<JavaConnectorService>();
 
   final _memoizer = AsyncMemoizer<dynamic>();
 
@@ -37,25 +36,27 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => FutureBuilder(
-          future: _memoizer.runOnce(() => settingsService
-              .init()
-              .then((_) => clientService.start())),
-          builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-              case ConnectionState.waiting:
-                return Container(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    child: Center(child: CircularProgressIndicator()));
-              default:
-                if (snapshot.data == null) {
-                  return FileListView(); // Usually show login
-                } else {
-                  return FileListView();
+              future: _memoizer.runOnce(() => javaConnectorService
+                  .connect()
+                  .then((_) => settingsService
+                      .init()
+                      .then((_) => clientService.start()))),
+              builder: (context, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.none:
+                  case ConnectionState.waiting:
+                    return Container(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: Center(child: CircularProgressIndicator()));
+                  default:
+                    if (snapshot.data == null) {
+                      return FileListView(); // Usually show login
+                    } else {
+                      return FileListView();
+                    }
                 }
-            }
-          },
-        ),
+              },
+            ),
         '/settings': (context) => SettingsView(),
       },
     );

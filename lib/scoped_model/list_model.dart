@@ -16,10 +16,7 @@ import 'package:sheety_gui/scoped_model/base_model.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/drive_io_service.dart';
 import 'package:sheety_gui/services/file_selection_service.dart';
-import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/settings_service.dart';
-import 'package:sheety_gui/ui/widgets/bottom_status.dart';
-import 'package:sheety_gui/ui/widgets/file_icon.dart';
 import 'package:sheety_gui/utility.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
@@ -236,7 +233,7 @@ class ListModel extends BaseModel {
           final regex = RegExp(r'[-\w]{25,}');
 
           if (!regex.hasMatch(url)) {
-            print('no match: $url');
+            print('Invalid URL: $url');
             return;
           }
 
@@ -246,29 +243,20 @@ class ListModel extends BaseModel {
 
           showLoading();
 
-          _driveIO.insertFromDrive(
-            id,
-            startUpload: (_) => updateText('Cloning file'),
-            statusCallback: (progress, response) {
-              updatePercent(progress);
+          updateText('Cloning file');
 
-              if (response.status == UploadResponse_UploadStatus.COMPLETE) {
-                print('Request complete, adding file');
-                listItems.add(response.item);
-                notifyListeners();
-              }
-            },
-            completeUpload: () => hideLoading(true),
-          );
+          _driveIO.insertFromDrive(id).then((listItem) {
+            print('Request complete, adding file');
+            listItems.add(listItem);
+            hideLoading(true);
+          });
         },
       );
     }, () {
       Navigator.of(context).pop();
       _selection.sendRequest(
           multi: true,
-          selected: (files) {
-            print('filezxz: $files');
-
+          onSelect: (files) {
             if (files.isEmpty) {
               return;
             }
@@ -283,19 +271,17 @@ class ListModel extends BaseModel {
                 var name = File(file).uri.pathSegments.last;
                 updateText('Uploading $name');
               },
-              statusCallback: (index, progress, response) {
+              statusCallback: (progress) {
                 updatePercent(progress);
-
-                if (response.status == UploadResponse_UploadStatus.COMPLETE) {
-                  print('Request complete, adding file');
-                  listItems.add(response.item);
-                  notifyListeners();
-                }
               },
-              completeUpload: () => hideLoading(true),
-            );
+              completeUpload: (path, item) {
+                print('Request complete, adding file');
+                listItems.add(item);
+                notifyListeners();
+              },
+            ).then((_) => hideLoading(true));
           },
-          cancelled: () => print('Cancelled file open'));
+          onCancel: () => print('Cancelled file open'));
     }));
   }
 
@@ -310,7 +296,7 @@ class ListModel extends BaseModel {
     confirmDialog(
       context,
       onAccept: () {
-        print('Downloading $selected');
+        print('Downloading ${selected.length} file(s)');
 
         showLoading();
 
@@ -352,21 +338,19 @@ class ListModel extends BaseModel {
         var idNameMap = Map<String, ListItem>.fromIterable(selected,
             key: (item) => item.id);
 
-        _driveIO.removeFiles(idNameMap.keys.toList(),
-            startRemove: (id) => updateText('Removing ${idNameMap[id].name}'),
-            statusCallback: (index, progress, response) {
-              updatePercent(progress);
-
-              if (response.status == RemoveResponse_RemoveStatus.COMPLETE) {
-                listItems.remove(selected[index]);
-                selected.remove(selected[index]);
-                notifyListeners();
-              }
-            },
-            completeRemove: () {
-              startCollapse();
-              hideLoading(true);
-            });
+        _driveIO
+            .removeFiles(idNameMap.keys.toList(),
+                startRemove: (id) =>
+                    updateText('Removing ${idNameMap[id].name}'),
+                statusCallback: (progress) => updatePercent(progress),
+                completeRemove: (id) {
+                  listItems.remove(idNameMap[id]);
+                  selected.remove(idNameMap[id]);
+                })
+            .then((_) {
+          startCollapse();
+          hideLoading(true);
+        });
       },
       title: 'Confirm Remove',
       body:

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:grpc/grpc.dart' as grpc;
 import 'package:flutter/widgets.dart';
 
 extension IntIterableUtility<int> on Iterable {
@@ -32,4 +33,20 @@ extension PathUtility on String {
 
   /// Creates a new [Directory] object with correct path separators from the given String.
   Directory directory() => Directory(path());
+}
+
+extension ErrorStreamCatcher<T> on grpc.ResponseStream<T> {
+  grpc.ResponseStream<T> printErrors() {
+    handleError((error, stack) => print(
+        'An error has occurred during a gRPC request stream. Error:\n$error\nStack:\n$stack'));
+    return this;
+  }
+}
+
+extension ErrorFutureCatcher<T> on grpc.ResponseFuture<T> {
+  grpc.ResponseFuture<T> printErrors() {
+    catchError((error, stack) => print(
+        'An error has occurred during a gRPC request future. Error:\n$error\nStack:\n$stack'));
+    return this;
+  }
 }

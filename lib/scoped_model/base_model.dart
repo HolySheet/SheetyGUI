@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:sheety_gui/scoped_model/list_model.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/clipboard_service.dart';
 import 'package:sheety_gui/ui/widgets/bottom_status.dart';

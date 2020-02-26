@@ -6,7 +6,6 @@ import 'package:grpc/grpc.dart';
 import 'package:sheety_gui/generated/holysheet_service.pb.dart';
 import 'package:sheety_gui/service_locator.dart';
 import 'package:sheety_gui/services/grpc_client_service.dart';
-import 'package:sheety_gui/services/java_connector_service.dart';
 import 'package:sheety_gui/services/settings_service.dart';
 
 class DriveIOService {
@@ -20,50 +19,59 @@ class DriveIOService {
     }
 
     return _conn.client
-        .listFiles(ListRequest()..path = path)
-        .then((response) => List.of(cachedItems = response.items));
+        ?.listFiles(ListRequest()..path = path)
+        ?.then((response) => List.of(cachedItems = response.items)) ?? [];
   }
 
-  /// Uploads the given files. [statusCallback] is a function with the
-  /// parameters of the index of the file's upload status, total upload
-  /// percentage of completion, and the raw [UploadStatusResponse].
-  /// [startUpload] is invoked when a file is send initially to upload.
-  /// [completeUpload] is invoked when a single file has been uploaded.
-  /// TODO: Add options for upload type/compression
-  void uploadFiles(List<String> files,
-          {Function(int index, double progress, UploadResponse response)
-              statusCallback,
-          Function(String) startUpload,
-          Function() completeUpload}) =>
-      _sendRequestForIds(
-        files,
-        sendRequest: (file) => _conn.client.uploadFile(UploadRequest()
-          ..upload = _settings[Setting.upload]
-          ..compression = _settings[Setting.compression]
-          ..sheetSize = Int64(_settings[Setting.sheetSize])
-          ..file = file),
-        statusCallback: statusCallback,
-        startAction: startUpload,
-        completeAction: completeUpload,
-      );
+  /// Uploads the given files. [statusCallback] is invoked
+  /// with the 0-1 percentage of the total completion. [startUpload] is invoked
+  /// when a file is about to be uploaded, and [completeUpload] is invoked
+  /// when a file has been uploaded, with an argument of the file ID and the
+  /// [ListItem] uploaded.
+  Future<void> uploadFiles(List<String> files,
+      {Function(double) statusCallback,
+      Function(String) startUpload,
+      Function(String, ListItem) completeUpload}) async {
+    final double total = files.length.toDouble();
+    for (var i = 0; i < files.length; i++) {
+      startUpload(files[i]);
+      final item = await waitForComplete(_conn.client.uploadFile(UploadRequest()
+        ..upload = _settings[Setting.upload]
+        ..compression = _settings[Setting.compression]
+        ..sheetSize = Int64(_settings[Setting.sheetSize])
+        ..localPath = files[i]));
 
-  /// Removes the given files. [statusCallback] is a function with the
-  /// parameters of the index of the file's removal status, total removal
-  /// percentage of completion, and the raw [RemoveStatusResponse].
-  /// [startRemove] is invoked when a file is send initially to upload.
-  /// [completeRemove] is invoked when a single file has been removed.
-  void removeFiles(List<String> ids,
-      {Function(int index, double progress, RemoveResponse response)
-          statusCallback,
+      completeUpload(files[i], item);
+      statusCallback((i + 1) / total);
+    }
+  }
+
+  Future<ListItem> waitForComplete(
+      ResponseStream<UploadResponse> response) async {
+    final completer = Completer<ListItem>();
+    response.listen((response) {
+      if (response.uploadStatus == UploadResponse_UploadStatus.COMPLETE) {
+        completer.complete(response.item);
+      }
+    });
+    return completer.future;
+  }
+
+  /// Removes the given files with IDs of [ids]. [statusCallback] is invoked
+  /// with the 0-1 percentage of the total completion. [startRemove] is invoked
+  /// when a file is about to be deleted, and [completeRemove] is invoked
+  /// when a file has been removed.
+  Future<void> removeFiles(List<String> ids,
+      {Function(double) statusCallback,
       Function(String) startRemove,
-      Function() completeRemove}) {
-    _sendRequestForIds(
-      ids,
-      sendRequest: (id) => _conn.client.removeFile(RemoveRequest()..id = id),
-      statusCallback: statusCallback,
-      startAction: startRemove,
-      completeAction: completeRemove,
-    );
+      Function(String) completeRemove}) async {
+    final double total = ids.length.toDouble();
+    for (var i = 0; i < ids.length; i++) {
+      startRemove(ids[i]);
+      await _conn.client.removeFile(RemoveRequest()..id = ids[i]);
+      completeRemove(ids[i]);
+      statusCallback((i + 1) / total);
+    }
   }
 
   /// Downloads the given files. [idPaths] is a map of IDs to paths to download
@@ -87,27 +95,14 @@ class DriveIOService {
         completeAction: completeDownload,
       );
 
-  /// Clones a file with the remote ID of [id] to Google Sheets. [statusCallback] is a function with the
-  /// parameters of the index of the file's upload status, total upload
-  /// percentage of completion, and the raw [UploadResponse].
-  /// [startUpload] is invoked when a file is send initially to upload.
-  /// [completeUpload] is invoked when a single file has been uploaded.
-  void insertFromDrive(String id,
-          {Function(double progress, UploadResponse response) statusCallback,
-          Function(String) startUpload,
-          Function() completeUpload}) =>
-      _sendRequestForIds(
-        [id],
-        sendRequest: (_) => _conn.client.uploadFile(UploadRequest()
-          ..upload = _settings[Setting.upload]
-          ..compression = _settings[Setting.compression]
-          ..sheetSize = Int64(_settings[Setting.sheetSize])
-          ..id = id),
-        statusCallback: (_, progress, response) =>
-            statusCallback(progress, response),
-        startAction: startUpload,
-        completeAction: completeUpload,
-      );
+  /// Clones a file with the remote ID of [id] to Google Sheets. Returns the
+  /// created [ListItem] file.
+  Future<ListItem> insertFromDrive(String id) async =>
+      waitForComplete(_conn.client.uploadFile(UploadRequest()
+        ..id = id
+        ..upload = _settings[Setting.upload]
+        ..compression = _settings[Setting.compression]
+        ..sheetSize = Int64(_settings[Setting.sheetSize])));
 
   void _sendRequestForIds<T>(List<String> ids,
       {@required ResponseStream<dynamic> Function(String) sendRequest,

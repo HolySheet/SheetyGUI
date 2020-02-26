@@ -5,7 +5,6 @@ import 'package:filesize/filesize.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:sheety_gui/scoped_model/list_model.dart';
 import 'package:sheety_gui/ui/views/base_view.dart';
 import 'package:sheety_gui/ui/widgets/file_icon.dart';
@@ -97,6 +96,7 @@ class FileListViewState extends State<FileListView>
                                           ? Icons.link
                                           : Icons.link_off),
                                       onPressed: model.toggleShared,
+                                      padding: EdgeInsets.all(8),
                                     ),
                                   ),
                                 ],
@@ -151,7 +151,9 @@ class FileListViewState extends State<FileListView>
                             child: Text(model.showingSelected.name ?? '',
                                 style: fileTitleDisplay),
                           ),
-                          lineText(filesize(model.showingSelected.size?.toInt() ?? 0),
+                          lineText(
+                              filesize(
+                                  model.showingSelected.size?.toInt() ?? 0),
                               topPadding: 20),
                           lineText(
                               '${model.showingSelected.sheets ?? ''} Sheet${model.showingSelected.sheets != 1 ? 's' : ''}'),
